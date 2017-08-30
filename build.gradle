@@ -1,0 +1,19 @@
+apply plugin: 'idea'
+apply plugin: 'org.ensime.gradle'
+
+buildscript {
+  repositories() {
+    mavenCentral()
+    maven {  url "https://plugins.gradle.org/m2/" }
+  }
+
+  dependencies {
+    classpath 'com.yodle.griddle:griddle:1.7'
+    classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
+    classpath "gradle.plugin.net.coacoas.gradle:ensime-gradle:0.2.8"
+  }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '3.5'
+}
