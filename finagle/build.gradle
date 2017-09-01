@@ -1,19 +1,42 @@
-apply plugin: 'idea'
-apply plugin: 'org.ensime.gradle'
-
 buildscript {
   repositories() {
     mavenCentral()
     maven {  url "https://plugins.gradle.org/m2/" }
+    maven {  url "http://oss.jfrog.org/oss-snapshot-local/" }
   }
 
   dependencies {
-    classpath 'com.yodle.griddle:griddle:1.7'
-    classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
-    classpath "gradle.plugin.net.coacoas.gradle:ensime-gradle:0.2.8"
+//    classpath "com.yodle.griddle:griddle:1.7"
+//    classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
   }
 }
 
-task wrapper(type: Wrapper) {
-  gradleVersion = '3.5'
+plugins {
+  id 'org.ensime.gradle' version '0.2.8'
 }
+
+ensime { 
+  formattingPrefs { 
+    indentSpaces   4
+    indentWithTabs false
+  }
+}
+
+subprojects {
+  configurations {
+    runtime.exclude group: "org.slf4j", module: "slf4j-log4j12"
+    runtime.exclude group: "org.slf4j", module: "log4j-over-slf4j"
+    runtime.exclude group: "org.slf4j", module: "jcl-over-slf4j"
+    runtime.exclude group: "org.slf4j", module: "slf4j-jdk14"
+    runtime.exclude group: "log4j"
+  }
+
+  dependencies {
+    runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.3'
+  }
+}
+
+apply from: 'blessedDeps.gradle'
+//task wrapper(type: Wrapper) {
+//  gradleVersion = '3.5'
+//}

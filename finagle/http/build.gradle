@@ -1,0 +1,30 @@
+apply plugin: 'scala'
+apply plugin: 'application'
+apply plugin: 'org.ensime.gradle'
+
+sourceCompatibility = 1.8
+
+mainClassName = "com.m5g.DemoHttpServiceMain"
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.m5g.DemoHttpServiceMain',
+                   'Implementation-Title': 'Demo HTTP Server'
+    }
+}
+
+dependencies {
+    compile group: 'com.twitter', name: 'twitter-server_2.11', version: '1.16.0'
+    compile group: 'com.twitter', name: 'util-core_2.11', version: '6.30.0'
+    compile group: 'com.twitter', name: 'util-stats_2.11', version: '6.30.0'
+    compile group: 'com.twitter', name: 'finagle-core_2.11', version: '6.31.0'
+    compile group: 'com.twitter', name: 'finagle-http_2.11', version: '6.31.0'
+    compile group: 'com.twitter.finatra', name: 'finatra-slf4j_2.11', version: '2.1.2'
+    compile group: 'com.twitter.finatra', name: 'finatra-http_2.11', version: '2.1.2'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile "org.mockito:mockito-core:1.+"
+
+    runtime group: 'com.twitter', name: 'finagle-stats_2.11', version: '6.31.0'
+}
+

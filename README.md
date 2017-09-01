@@ -1,5 +1,8 @@
 
-#Lets use vim + Scala + ensime!
+# Standard Scala dev environment with vim + plugin + ensime
+
+Requires Gradle 2.x. - see notes 
+If you are using Gradle 3.4+, there was a breaking change. Please use version 0.3.0-SNAPSHOT.
 
 ## First - configure gradle
 
@@ -12,7 +15,7 @@ $ { echo ; curl -s https://raw.githubusercontent.com/Mario5Gray/demos/master/con
 
 ## Installing Ensime plugins for vim:
 
-See ensime.org/editors/vim/install for complete details:
+See http://ensime.org/editors/vim/install for complete details:
 
 ### Ensure Vim is installed with the python2 package
 With Ubuntu 16.04+
@@ -28,7 +31,7 @@ Install packages `vim-common` and `vim`.
 $ pip install websocket-client sexpdata
 ```
 
-#### Obtain vim-plug or vundle (using vim-plug) for vim plugin mgmt.
+#### Obtain vim-plug or vundle (using vim-plug) for vim plugin mgmt:
 Complete details at vim-plug home - https://github.com/junegunn/vim-plug
 
 This will place only `plug.vim` into a new or existing directory struct:
@@ -52,10 +55,10 @@ Plug 'https://github.com/junegunn/vim-github-dashboard.git'
 call plug#end()
 ```
 
-### Obtain vim-scala
+### Obtain vim-scala plugins
 
-##### Ignore plea to use a saner package manager
-##### http://tammersaleh.com/posts/the-modern-vim-config-with-pathogen/
+##### Ignore the plea to use a saner package manager:
+http://tammersaleh.com/posts/the-modern-vim-config-with-pathogen/
 
 To create the configurations, run this snippet:
 
@@ -66,5 +69,9 @@ for d in ftdetect indent syntax; do
 done
 ```
 
+### Commit vim configuration changes
+`:PlugInstall`
 
+## Finally, we can proceed to a project!
 
+# ENJOY!

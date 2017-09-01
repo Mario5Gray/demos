@@ -1,0 +1,27 @@
+rootProject.ext.blessedDeps = new java.util.HashMap<String, String>()
+
+rootProject.ext.blessedDeps.put(
+  "com.fasterxml.jackson.core:jackson-core",
+  "com.fasterxml.jackson.core:jackson-core:2.7.2"
+)
+
+rootProject.ext.blessedDeps.put(
+  "com.fasterxml.jackson.core:jackson-annotations",
+  "com.fasterxml.jackson.core:jackson-annotations:2.7.2"
+)
+
+rootProject.ext.blessedDeps.put(
+  "com.fasterxml.jackson.databind:jackson-databind",
+  "com.fasterxml.jackson.databind:jackson-databind:2.7.2"
+)
+
+rootProject.ext.blessedDeps.put(
+  "com.fasterxml.jackson.module:jackson-module-scala_2.11",
+  "com.fasterxml.jackson.module:jackson-module-scala_2.11:2.7.2"
+)
+
+rootProject.ext.blessedDeps.put(
+        "com.fasterxml.jackson.module:jackson-module-paranamer",
+        "com.fasterxml.jackson.module:jackson-module-paranamer:2.7.2"
+)
+
