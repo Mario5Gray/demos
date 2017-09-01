@@ -1,3 +1,4 @@
+
 apply plugin: AddEnsimePlugin
 
 class AddEnsimePlugin  implements Plugin<Gradle> {
@@ -20,11 +21,15 @@ class AddEnsimePlugin  implements Plugin<Gradle> {
 	      mavenCentral()
 
               jcenter()
+              maven { url 'https://plugins.gradle.org/m2' }
+              maven { url 'http://oss.jfrog.org/oss-snapshot-local/' }
             }
 	    //if using snapshot, change rootProject.ensime.serverVersion to a snapshot
 	    //update this property to the lated ensime-gradle version
             dependencies {
-	      classpath 'net.coacoas.gradle:ensime-gradle:0.3.0-SNAPSHOT'
+              
+             classpath 'gradle.plugin.net.coacoas.gradle:ensime-gradle:0.2.8'
+	     // classpath 'net.coacoas.gradle:ensime-gradle:0.2.8'
 	    }
           }
         }
@@ -33,7 +38,7 @@ class AddEnsimePlugin  implements Plugin<Gradle> {
           if (!added && supportedPlugins.contains(plugin.class.name)) { 
             rootProject.apply plugin: 'org.ensime.gradle'
 	    //update the server version to the latest supported by the ensime-gradle plugin
-	    rootProject.ensime.serverVersion = "2.0.0-SNAPSHOT"
+	    rootProject.ensime.serverVersion = '1.0.0'
             added = true
           }
         }
