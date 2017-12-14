@@ -48,7 +48,6 @@ public class MessagingApplication {
 
         log.info("Sending an email");
         jmsTemplate.convertAndSend("mailbox", new Email("info@example.com", "Hello"));
-
     }
 }
 
