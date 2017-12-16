@@ -108,4 +108,69 @@ public class ReactiveApplicationTests {
 			.withMessage("bar");											
 	}
 
+	@Test
+	public void consumeNextWith2() throws Exception {
+		Flux<String> flux = Flux.just("bar");
+		Assertions.assertThatExceptionOfType(AssertionError.class)
+		.isThrownBy(() -> StepVerifier.create(flux)
+										.consumeNextWith(s -> {
+											if (!"foo".equals(s)) {
+												throw new AssertionError("e:"+s);
+											}
+										})
+										.expectComplete()
+										.verify())
+		.withMessage("e:bar");
+	}
+
+	@Test
+	public void assertNext() throws Exception {
+		Flux<String> flux = Flux.just("foo");
+
+		Assertions.assertThatExceptionOfType(AssertionError.class)
+		.isThrownBy(() -> StepVerifier.create(flux)
+		.assertNext(s -> Assertions.assertThat(s).endsWith("ooz"))
+		.expectComplete()
+		.verify())
+		.withMessage("\nExpecting:\n <\"foo\">\nto end with:\n <\"ooz\">\n");
+	}
+
+	@Test
+	public void missingNext() {
+		Flux<String> flux = Flux.just("foo", "bar");
+		
+		Assertions.assertThatExceptionOfType(AssertionError.class)
+				.isThrownBy(() -> StepVerifier.create(flux)
+			.expectNext("foo")
+			.expectComplete()
+			.verify())
+			.withMessage("expectation \"expectComplete\" failed (expected: onComplete(); actual: onNext(bar))");
+		}
+
+		@Test
+		public void missingNextAsync() {
+			Flux<String> flux = Flux.just("foo", "bar")
+									.publishOn(Schedulers.parallel());
+
+			Assertions.assertThatExceptionOfType(AssertionError.class)
+							.isThrownBy(() -> StepVerifier.create(flux)
+									.expectNext("foo")	
+									.expectComplete()
+									.verify()
+							)
+							.withMessage("expectation \"expectComplete\" failed (expected: onComplete(); actual: onNext(bar))");
+		}
+
+		@Test
+		public void expectNextCount() {
+			Flux<String> flux = Flux.just("foo", "bar");
+
+			StepVerifier.create(flux, 0)
+			.thenRequest(1)
+			.expectNextCount(1)
+			.thenRequest(1)
+			.expectNextCount(1)
+			.expectComplete()
+			.verify();
+		}
 }
