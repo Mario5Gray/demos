@@ -173,4 +173,46 @@ public class ReactiveApplicationTests {
 			.expectComplete()
 			.verify();
 		}
+
+		@Test
+		public void expectNextCountLots() {
+			Flux<Integer> flux = Flux.range(0, 1_000_000);
+			StepVerifier.create(flux, 0)
+			.thenRequest(100_000)
+			.expectNextCount(100_000)
+			.thenRequest(500_000)
+			.expectNextCount(500_000)
+			.thenRequest(500_000)
+			.expectNextCount(400_000)
+			.expectComplete()
+			.verify();
+		}
+
+		@Test
+		public void expectNextCountZeroBeforeExpectNext() {
+			StepVerifier.create(Flux.just("foo", "bar"))
+							.expectNextCount(0)
+							.expectNext("foo", "bar")
+							.expectComplete()
+							.verify();
+		}
+
+		@Test
+		public void epectNextCountLotsErrors() {
+			Flux<Integer> flux = Flux.range(0, 1_000_000);
+
+			assertThatExceptionOfType(AssertionError.class)
+							.isThrownBy(() -> StepVerifier.create(flux, 0)
+						.thenRequest(100_000)
+						.expectNextCount(100_000)
+						.thenRequest(Integer.MAX_VALUE)
+						.expectNextCount(900_001)
+						.expectComplete()
+						.verify())
+				.withMessageStartingWith("expectation \"expectNextCount(900001)\" failed")
+					.withMessageContaining("expected: count = 900001; actual: counted = 900000; signal: onComplete()");
+					
+		}
+
+		
 }
