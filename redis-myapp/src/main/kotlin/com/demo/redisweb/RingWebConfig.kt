@@ -6,7 +6,6 @@ import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Mono
-import java.util.*
 
 @Configuration
 class RingWebConfig {
@@ -25,6 +24,14 @@ class RingWebConfig {
                             Ring::class.java)
         }
 
+        GET("/all") {
+            ServerResponse
+                    .ok()
+                    .body(
+                            repo.findAll().map { r -> r.ring },
+                            Ring::class.java)
+        }
+
         POST("/new") { req ->
             req.bodyToMono(RingGeo::class.java)
                     .flatMap {
@@ -32,7 +39,7 @@ class RingWebConfig {
                                 .ok()
                                 .body(repo
                                         .save(Mono.just(RingGeo(
-                                                Ring(generateId(), it.ring.alloy, it.ring.size),
+                                                Ring(ID.generateId(), it.ring.alloy, it.ring.size),
                                                 it.lat,
                                                 it.lon))),
                                         RingGeo::class.java
@@ -41,9 +48,5 @@ class RingWebConfig {
         }
     }
 
-    private fun generateId(): String {
-        val tmp = Random().nextLong()
-        return Math.max(tmp, tmp * -1).toString()
-    }
-
 }
+
