@@ -41,20 +41,20 @@ class RingRedisConfig {
 
         return ReactiveRedisTemplate(cf, builder.build())
     }
-//
-//    @Bean
-//    fun stringCache(cf: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, String> {
-//        val keys = StringRedisSerializer()
-//        val values = StringRedisSerializer()
-//
-//        val builder: RedisSerializationContext.RedisSerializationContextBuilder<String, String> =
-//                RedisSerializationContext.newSerializationContext(keys)
-//
-//        builder.key(keys)
-//        builder.value(values)
-//        builder.hashKey(keys)
-//        builder.hashValue(values)
-//
-//        return ReactiveRedisTemplate(cf, builder.build())
-//    }
+
+    @Bean
+    fun stringCache(cf: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, String> {
+        val keys = StringRedisSerializer()
+        val values = StringRedisSerializer()
+
+        val builder: RedisSerializationContext.RedisSerializationContextBuilder<String, String> =
+                RedisSerializationContext.newSerializationContext(keys)
+
+        builder.key(keys)
+        builder.value(values)
+        builder.hashKey(keys)
+        builder.hashValue(values)
+
+        return ReactiveRedisTemplate(cf, builder.build())
+    }
 }
