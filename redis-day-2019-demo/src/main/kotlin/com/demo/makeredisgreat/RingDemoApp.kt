@@ -39,7 +39,7 @@ class RingDemoApp {
     fun cacheSmokeDemo(ringCache: ReactiveRedisTemplate<String, Ring>,
                        idCache: ReactiveRedisTemplate<String, String>): ApplicationRunner {
 
-        val latch = CountDownLatch(4)
+        val latch = CountDownLatch(4)       // we expect just 4 events to flow through processor
         return titledRunner("REDIS-DEMO",
                 ApplicationRunner {
 
@@ -93,7 +93,10 @@ class RingDemoApp {
                                         )
                                                 .map { RingGeo(it.t1, it.t2.x, it.t2.y) }
                                     }
-                                    .doOnNext { log.info("LIST($listKey).pop == $it"); latch.countDown() }
+                                    .doOnNext {
+                                        log.info("LIST($listKey).pop == $it")
+                                        latch.countDown()
+                                    }
                                     .repeat(1)
                             )
 
@@ -106,17 +109,17 @@ class RingDemoApp {
                                         }
                             }
 
-                    val searchFlux =
-                            Flux.from(geoOps.radius(geoKey, Circle(RandomPlace, RandomDistance)))
-                                    .doOnNext {
-                                        fanoutProcessor.onNext(it.content.name)
-                                    }
+                    val searchFlux = Flux
+                            .from(geoOps.radius(geoKey, Circle(RandomPlace, RandomDistance)))
+                            .doOnNext {
+                                fanoutProcessor.onNext(it.content.name)
+                            }
 
-                    val readers = Flux
+                    Flux
                             .merge(processingFlux, readTopicFlux, readListFlux)
                             .doOnError(Throwable::printStackTrace)
                             .doOnComplete { log.info("READER Complete") }
-                    readers.subscribe()
+                            .subscribe()
 
                     Flux
                             .concat(flushFlux, storeFlux, searchFlux)

@@ -77,4 +77,3 @@ class RingService(@Autowired val ringCache: ReactiveRedisTemplate<String, Ring>,
     }
 
 }
-
