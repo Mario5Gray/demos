@@ -21,7 +21,7 @@ class RingDemoApp {
     val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(RingDemoApp::class.java)
 
     val geoKey = "ringGeo"
-    val topicKey = "ringGeo"
+    val topicKey = "ringTopic"
     val listKey = "ringInbox"
 
     val ringList = listOf(
@@ -53,7 +53,6 @@ class RingDemoApp {
                             .reactiveConnection
                             .serverCommands()
                             .flushAll()
-
 
                     val processingFlux = fanoutProcessor
                             .onBackpressureDrop()

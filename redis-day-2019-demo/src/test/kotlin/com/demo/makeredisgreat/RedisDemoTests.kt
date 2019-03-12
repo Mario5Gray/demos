@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @SpringBootTest
 class RedisDemoTests {
 
+	// TODO use embedded redis to demonstrate tests.
 	@Test
 	fun contextLoads() {
 	}
