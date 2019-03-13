@@ -50,4 +50,3 @@ fun main(args: Array<String>) {
     reactor.core.publisher.Hooks.onOperatorDebug()
     runApplication<RingDemoApp>(*args)
 }
-

@@ -26,14 +26,14 @@ import reactor.core.publisher.toFlux
 class RingService(@Autowired val ringCache: ReactiveRedisTemplate<String, Ring>,
                   @Autowired val idCache: ReactiveRedisTemplate<String, String>,
                   @Value("\${my.key.geo}") val keyGeo: String,
-                  @Value("\${my.key.list") val keyList: String,
-                  @Value("\${my.key.topic") val keyTopic: String) {
+                  @Value("\${my.key.list}") val keyList: String,
+                  @Value("\${my.key.topic}") val keyTopic: String) {
 
     fun findAll(): Flux<RingGeo> {
         val setOps = idCache.opsForZSet()
         val ringOps = ringCache.opsForValue()
 
-        return setOps.range(keyGeo, Range(0L,-1L))
+        return setOps.range(keyGeo, Range.of(Range.Bound.unbounded(), Range.Bound.unbounded()))
                 .flatMap { id ->
                     ringOps.get(id)
                             .map { ring -> RingGeo(ring, 0.0, 0.0) }
