@@ -9,62 +9,48 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.reactivestreams.Publisher
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
-import org.springframework.test.context.TestPropertySource
+import org.springframework.data.redis.listener.ChannelTopic
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import reactor.core.publisher.DirectProcessor
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
-import redis.embedded.RedisExecProvider
 import redis.embedded.RedisServer
-import redis.embedded.util.Architecture
-import redis.embedded.util.OS
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicLong
 
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestPropertySource(locations = ["classpath:application.properties"])
 class RedisDemoTests {
-
-    private val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(RedisDemoTests::class.java)
+    val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(RedisDemoTests::class.java)
 
     private val port = 6777
-
-    @Value("\${redis.test.server.exec}")
-    private lateinit var redisPath: String
 
     private lateinit var redisServer: RedisServer
 
     private lateinit var lettuce: LettuceConnectionFactory
 
+    private lateinit var template: ReactiveRedisTemplate<String, String>
+
     @BeforeAll
     fun setupRedis() {
-        val customProvider: RedisExecProvider = RedisExecProvider
-                .defaultProvider()
-                .override(OS.UNIX, redisPath)
-                .override(OS.WINDOWS, Architecture.x86, redisPath)
-                .override(OS.WINDOWS, Architecture.x86_64, redisPath)
-                .override(OS.MAC_OS_X, Architecture.x86, redisPath)
-                .override(OS.MAC_OS_X, Architecture.x86_64, redisPath)
-
-        redisServer = RedisServer(customProvider, port)
-
-        log.info("Starting Redis server on ::$port")
+        redisServer = RedisServer(port)
 
         redisServer.start()
 
-        lettuce = LettuceConnectionFactory(
-                RedisStandaloneConfiguration("127.0.0.1", port))
+        lettuce = LettuceConnectionFactory(RedisStandaloneConfiguration("127.0.0.1", 6379))
+
         lettuce.afterPropertiesSet()
 
-
+        template = ReactiveStringRedisTemplate(lettuce)
     }
 
     @AfterAll
-    fun tearDown() {
-        redisServer.stop()
-    }
+    fun tearDown() = redisServer.stop()
+
 
     private val idMatcher: Matcher<String> = Matchers
             .allOf(
@@ -73,15 +59,9 @@ class RedisDemoTests {
             )
 
     @Test
-    fun testRedisConnection() {
-        val template = ReactiveStringRedisTemplate(lettuce)
+    fun testShouldPing() {
 
-        lettuce.validateConnection()
-
-        val ping = template
-                .connectionFactory
-                .reactiveConnection
-                .ping()
+        val ping = template.connectionFactory.reactiveConnection.ping()
 
         StepVerifier
                 .create(ping)
@@ -91,28 +71,83 @@ class RedisDemoTests {
     }
 
     @Test
-    fun redisExecuteGet() {
-        val idCache = ReactiveStringRedisTemplate(lettuce)
-
+    fun testShouldSetGet() {
         val cachePut: Publisher<Boolean> =
-                idCache.opsForValue()
+                template.opsForValue()
                         .set("TEST", "1234")
 
         val cacheGet: Publisher<String> =
-                idCache.opsForValue()
+                template.opsForValue()
                         .get("TEST")
 
-        val setAndGet = Flux.from(cachePut)
-                .thenMany(cacheGet)
+        val setAndGet = Flux.from(cachePut).thenMany(cacheGet)
 
         StepVerifier
                 .create(setAndGet)
                 .expectSubscription()
                 .assertNext { t ->
-                    MatcherAssert.assertThat("Receives Value for Key",
-                            t, idMatcher)
+                    MatcherAssert.assertThat("Receives Value for Key", t, idMatcher)
                 }
                 .verifyComplete()
     }
 
+    @Test
+    fun testShouldPubSubSendReceive() {
+        val topic = "TEST"
+
+        val processor: DirectProcessor<String> = DirectProcessor.create()
+
+        // destination for pubsubSub data
+        val pubSubDataFlux = processor
+                .onBackpressureBuffer()
+                .handle<String> { r, sink ->
+                    sink.next(r)
+                }
+                .publish()
+                .autoConnect()
+                .cache()
+
+        // writes to channel
+        val writerFlux = template.convertAndSend(topic, "1234")
+                .repeat(1)
+                .delaySubscription(Duration.ofSeconds(2)) // ENSURE channelListener is activated.
+
+        val tcnt = AtomicLong(2)
+
+        // Listen to channel
+        val channelSubFlux = template
+                .listenTo(ChannelTopic(topic))
+                .doOnNext {
+                    processor.onNext(it.message)
+                }
+                .handle<String> { _, sink ->
+                    if (tcnt.decrementAndGet() == 0L) {
+                        sink.complete()
+                    }
+                }
+
+        Flux
+                .merge(
+                        channelSubFlux,
+                        writerFlux
+                )
+                .delaySubscription(Duration.ofSeconds(1)) // ensure pubSubData is subscribed first
+                .subscribe()
+
+
+        StepVerifier
+                .create(pubSubDataFlux
+                        .take(2)
+                        .doOnNext { log.info("N= $it") }
+                )
+                .expectSubscription()
+                .assertNext { t ->
+                    MatcherAssert.assertThat("Receives Value for Key", t, idMatcher)
+                }
+                .assertNext { t ->
+                    MatcherAssert.assertThat("Receives Value for Key", t, idMatcher)
+                }
+                .expectComplete()
+                .verify(Duration.ofSeconds(5))
+    }
 }
