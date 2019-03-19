@@ -1,5 +1,11 @@
 package com.demo.chatservice
 
+import org.apache.cassandra.config.DatabaseDescriptor
+import org.cassandraunit.spring.CassandraDataSet
+import org.cassandraunit.spring.CassandraUnit
+import org.cassandraunit.spring.CassandraUnitTestExecutionListener
+import org.cassandraunit.spring.EmbeddedCassandra
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
@@ -9,20 +15,17 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
+import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 
-
-@ExtendWith(SpringExtension::class)
 @SpringBootTest
+@ExtendWith(SpringExtension::class)
+@TestExecutionListeners(CassandraUnitTestExecutionListener::class)
+@CassandraDataSet("simple.cql" )
+@EmbeddedCassandra
 class UserPersistenceTests {
-
-//    @ClassRule
-//    val CASSANDRA_KEYSPACE = CfassandraKeyspace.onLocalhost()
-
-    @Autowired
-    lateinit var repo: ChatUserCrudRepository
 
     @Autowired
     lateinit var template: ReactiveCassandraTemplate
@@ -36,7 +39,9 @@ class UserPersistenceTests {
                 .thenMany(Flux.just(chatUser))
                 .flatMap(template::insert)
 
-        val find = repo.findByHandle("vedder")
+        val find = template
+                .query(ChatUser::class.java)
+                .one()
 
         val composed = Flux
                 .from(truncateAndSave)
@@ -82,5 +87,10 @@ class UserPersistenceTests {
 
 @BeforeAll
 fun setUp() {
-
+    try {
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra(10000)
+    } catch (t :NullPointerException) {
+        DatabaseDescriptor.daemonInitialization()
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra(10000)
+    }
 }

@@ -2,7 +2,6 @@ package com.demo.chatservice
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
@@ -15,20 +14,20 @@ class UserDomainTests {
 
     @Test
     fun testShouldUserCreateAndReactivate() {
-        val user: ChatUser = ChatUser(123456L, "John", "JohnsHandle")
+        val user = ChatUser("123456L", "John", "JohnsHandle")
 
         assertAll("user",
                 { assertNotNull(user) },
-                { assertEquals(123456L, user.id) },
+                { assertEquals("123456L", user.id) },
                 { assertEquals("John", user.name) },
                 { assertEquals("JohnsHandle", user.handle) })
 
         StepVerifier
                 .create(Flux.just(user))
                 .assertNext { u ->
-                    assertAll("user",
+                    assertAll("simple user assertion",
                             { assertNotNull(u) },
-                            { assertEquals(123456L, u.id) }
+                            { assertEquals("123456L", u.id) }
                     )
                 }
                 .verifyComplete()
