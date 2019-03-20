@@ -23,7 +23,7 @@ import java.util.*
 @Import(CassandraConfiguration::class, ChatServiceApplication::class)
 @CassandraUnit
 @TestExecutionListeners(CassandraUnitDependencyInjectionTestExecutionListener::class, DependencyInjectionTestExecutionListener::class)
-@CassandraDataSet("simple.cql")
+@CassandraDataSet("simple-user.cql")
 class ChatUserRepositoryTests {
     @Autowired
     lateinit var repo: ChatUserCrudRepository

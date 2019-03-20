@@ -24,7 +24,7 @@ import java.util.*
 @Import(CassandraConfiguration::class, ChatServiceApplication::class)
 @CassandraUnit
 @TestExecutionListeners(CassandraUnitDependencyInjectionTestExecutionListener::class, DependencyInjectionTestExecutionListener::class)
-@CassandraDataSet("simple.cql")
+@CassandraDataSet("simple-user.cql")
 class UserPersistenceTests {
 
     @Autowired
@@ -89,4 +89,5 @@ class UserPersistenceTests {
                 { assertEquals("eddie", user.name) }
         )
     }
+
 }

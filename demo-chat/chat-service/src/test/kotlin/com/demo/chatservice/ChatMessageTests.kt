@@ -31,8 +31,8 @@ class ChatMessageTests {
         assertAll("message contents in tact",
                 { assertNotNull(msg) },
                 { assertNotNull(msg.id) },
-                { assertNotNull(msg.user_id) },
-                { assertNotNull(msg.room_id) },
+                { assertNotNull(msg.userId) },
+                { assertNotNull(msg.roomId) },
                 { assertNotNull(msg.text) },
                 { assertEquals(msg.text, "Welcome") },
                 { assertTrue(msg.visible) }
