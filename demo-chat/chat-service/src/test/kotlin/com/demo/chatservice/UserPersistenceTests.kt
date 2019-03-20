@@ -1,10 +1,7 @@
 package com.demo.chatservice
 
 import org.apache.cassandra.config.DatabaseDescriptor
-import org.cassandraunit.spring.CassandraDataSet
-import org.cassandraunit.spring.CassandraUnit
-import org.cassandraunit.spring.CassandraUnitTestExecutionListener
-import org.cassandraunit.spring.EmbeddedCassandra
+import org.cassandraunit.spring.*
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -13,26 +10,37 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
 import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 
-@SpringBootTest
 @ExtendWith(SpringExtension::class)
-@TestExecutionListeners(CassandraUnitTestExecutionListener::class)
-@CassandraDataSet("simple.cql" )
-@EmbeddedCassandra
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@Import(CassandraConfiguration::class, ChatServiceApplication::class)
+@CassandraUnit
+@TestExecutionListeners(CassandraUnitDependencyInjectionTestExecutionListener::class, DependencyInjectionTestExecutionListener::class )
+@CassandraDataSet("simple.cql")
 class UserPersistenceTests {
+
 
     @Autowired
     lateinit var template: ReactiveCassandraTemplate
 
     @Test
+    fun shouldContextLoad() {
+        assertAll("Reactive Template Exists",
+                { assertNotNull(template) } )
+    }
+
+    @Test
     fun shouldPerformSaveCrudFind() {
-        val chatUser = ChatUser(null, "john", "vedder")
+        val chatUser = ChatUser(null, "eddie", "vedder")
 
         val truncateAndSave = template
                 .truncate(ChatUser::class.java)
@@ -54,9 +62,9 @@ class UserPersistenceTests {
                 .verifyComplete()
     }
 
-    @Test
-    fun shouldPerformTruncateAndSave() {
-        val chatUser = ChatUser(null, "john", "vedder")
+    //@Test
+    fun shouldPerformTruncateAndSave(template: ReactiveCassandraTemplate) {
+        val chatUser = ChatUser(null, "eddie", "vedder")
 
         val truncateAndSave = template
                 .truncate(ChatUser::class.java)
@@ -80,7 +88,7 @@ class UserPersistenceTests {
                 { assertNotNull(user.id) },
                 { assertNotNull(user.handle) },
                 { assertEquals("vedder", user.handle) },
-                { assertEquals("john", user.name) }
+                { assertEquals("eddie", user.name) }
         )
     }
 }

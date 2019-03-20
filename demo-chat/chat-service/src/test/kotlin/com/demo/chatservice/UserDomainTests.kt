@@ -8,26 +8,28 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 class UserDomainTests {
 
     @Test
     fun testShouldUserCreateAndReactivate() {
-        val user = ChatUser("123456L", "John", "JohnsHandle")
+        val uuid = UUID.randomUUID()
+        val user = ChatUser(uuid, "Eddie", "EddiesHandle")
 
         assertAll("user",
                 { assertNotNull(user) },
-                { assertEquals("123456L", user.id) },
-                { assertEquals("John", user.name) },
-                { assertEquals("JohnsHandle", user.handle) })
+                { assertEquals(uuid, user.id) },
+                { assertEquals("Eddie", user.name) },
+                { assertEquals("EddiesHandle", user.handle) })
 
         StepVerifier
                 .create(Flux.just(user))
                 .assertNext { u ->
                     assertAll("simple user assertion",
                             { assertNotNull(u) },
-                            { assertEquals("123456L", u.id) }
+                            { assertEquals(uuid, u.id) }
                     )
                 }
                 .verifyComplete()
