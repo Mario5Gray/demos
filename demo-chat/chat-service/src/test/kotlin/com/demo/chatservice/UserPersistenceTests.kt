@@ -17,6 +17,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.sql.Time
+import java.time.LocalTime
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -38,7 +40,7 @@ class UserPersistenceTests {
 
     @Test
     fun shouldPerformSaveCrudFind() {
-        val chatUser = ChatUser(UUID.randomUUID(), "vedder", "eddie")
+        val chatUser = ChatUser(UUID.randomUUID(), "vedder", "eddie", Time.valueOf(LocalTime.now()))
 
         val truncateAndSave = template
                 .truncate(ChatUser::class.java)
@@ -62,7 +64,7 @@ class UserPersistenceTests {
 
     @Test
     fun shouldPerformTruncateAndSave() {
-        val chatUser = ChatUser(UUID.randomUUID(), "vedder", "eddie")
+        val chatUser = ChatUser(UUID.randomUUID(), "vedder", "eddie", Time.valueOf(LocalTime.now()))
 
         val truncateAndSave = template
                 .truncate(ChatUser::class.java)
@@ -79,7 +81,6 @@ class UserPersistenceTests {
 
     }
 
-    // helper function to verify user state
     fun userAssertions(user: ChatUser) {
         assertAll("User Assertion",
                 { assertNotNull(user) },

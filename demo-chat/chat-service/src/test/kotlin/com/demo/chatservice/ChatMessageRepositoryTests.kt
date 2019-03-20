@@ -15,6 +15,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.sql.Time
+import java.time.Duration
+import java.time.LocalTime
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -29,12 +32,12 @@ class ChatMessageRepositoryTests {
     lateinit var repo: ChatMessageRepository
 
     @Test
-    fun testShouldSaveFindById() {
+    fun testShouldSaveFindByRoomId() {
         val userId = UUID.randomUUID()
         val roomId = UUID.randomUUID()
         val msgId = UUID.randomUUID()
 
-        val saveMsg = repo.insert(ChatMessage(msgId, userId, roomId, "Welcome", true))
+        val saveMsg = repo.insert(ChatMessage(msgId, userId, roomId, "Welcome", Time.valueOf(LocalTime.now()), true))
         val findMsg = repo.findByRoomId(roomId)
 
         val composite = Flux
@@ -44,6 +47,34 @@ class ChatMessageRepositoryTests {
         StepVerifier
                 .create(composite)
                 .assertNext(this::chatMessageAssertion)
+                .verifyComplete()
+    }
+
+    @Test
+    fun testShouldSaveFindMessagesByUserId() {
+        val userId = UUID.randomUUID()
+
+        val chatMessageFlux = Flux
+                .just(
+                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
+                        ChatMessage(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
+                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
+                        ChatMessage(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), false),
+                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
+                        ChatMessage(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
+                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), false)
+                ).delayElements(Duration.ofSeconds(2))
+
+        val saveMessages = repo.insert(chatMessageFlux)
+        val findMessages = repo.findByUserId(userId)
+        val composite = Flux
+                .from(saveMessages)
+                .thenMany(findMessages)
+
+        StepVerifier
+                .create(composite)
+                .expectSubscription()
+                .expectNextCount(4)
                 .verifyComplete()
     }
 

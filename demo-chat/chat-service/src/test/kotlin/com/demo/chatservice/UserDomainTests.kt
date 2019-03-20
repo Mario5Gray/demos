@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.sql.Time
+import java.time.LocalTime
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -16,7 +18,7 @@ class UserDomainTests {
     @Test
     fun testShouldUserCreateAndReactivate() {
         val uuid = UUID.randomUUID()
-        val user = ChatUser(uuid, "Eddie", "EddiesHandle")
+        val user = ChatUser(uuid, "Eddie", "EddiesHandle", Time.valueOf(LocalTime.now()))
 
         assertAll("user",
                 { assertNotNull(user) },
