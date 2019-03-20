@@ -7,4 +7,4 @@ CREATE TABLE chat_user(
 id UUID,
 handle varchar,
 name varchar,
-PRIMARY KEY(id));
+PRIMARY KEY(id, handle));

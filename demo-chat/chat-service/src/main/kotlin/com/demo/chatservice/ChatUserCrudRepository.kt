@@ -1,13 +1,18 @@
 package com.demo.chatservice
 
-import org.springframework.data.cassandra.repository.Query
+import org.springframework.data.cassandra.repository.AllowFiltering
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.*
 
-interface ChatUserCrudRepository : ReactiveCassandraRepository<ChatUser, Long> {
+interface ChatUserCrudRepository : ReactiveCassandraRepository<ChatUser, UUID> {
 
-    @Query("SELECT * FROM chat_user WHERE handle = ?0")
+    @AllowFiltering
     fun findByHandle(handleQuery: String): Mono<ChatUser>
+
+    @AllowFiltering
+    fun findByName(handleQuery: String): Flux<ChatUser>
 
     fun findById(id: String): Mono<ChatUser>
 
