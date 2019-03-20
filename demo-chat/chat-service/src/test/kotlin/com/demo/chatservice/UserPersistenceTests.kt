@@ -19,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -40,7 +41,7 @@ class UserPersistenceTests {
 
     @Test
     fun shouldPerformSaveCrudFind() {
-        val chatUser = ChatUser(null, "eddie", "vedder")
+        val chatUser = ChatUser(UUID.randomUUID(), "vedder", "eddie")
 
         val truncateAndSave = template
                 .truncate(ChatUser::class.java)
@@ -62,9 +63,9 @@ class UserPersistenceTests {
                 .verifyComplete()
     }
 
-    //@Test
+    @Test
     fun shouldPerformTruncateAndSave(template: ReactiveCassandraTemplate) {
-        val chatUser = ChatUser(null, "eddie", "vedder")
+        val chatUser = ChatUser(null, "vedder", "eddie")
 
         val truncateAndSave = template
                 .truncate(ChatUser::class.java)
