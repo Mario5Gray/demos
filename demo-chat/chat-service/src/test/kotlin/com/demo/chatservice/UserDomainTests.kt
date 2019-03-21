@@ -23,8 +23,8 @@ class UserDomainTests {
         assertAll("user",
                 { assertNotNull(user) },
                 { assertEquals(uuid, user.id) },
-                { assertEquals("Eddie", user.name) },
-                { assertEquals("EddiesHandle", user.handle) })
+                { assertEquals("Eddie", user.handle) },
+                { assertEquals("EddiesHandle", user.name) })
 
         StepVerifier
                 .create(Flux.just(user))

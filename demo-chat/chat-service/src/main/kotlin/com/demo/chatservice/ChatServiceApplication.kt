@@ -3,6 +3,9 @@ package com.demo.chatservice
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.cloud.stream.annotation.EnableBinding
+import org.springframework.cloud.stream.annotation.StreamListener
+import org.springframework.cloud.stream.messaging.Sink
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -19,6 +22,16 @@ class ChatServiceApplication
 fun main(args: Array<String>) {
     runApplication<ChatServiceApplication>(*args)
 }
+
+//@Configuration
+//@EnableBinding(Sink::class)
+//class StreamConfiguration(val messageRepo: ChatMessageRepository) {
+//    @StreamListener(Sink.INPUT)
+//    fun handleMessage(message: ChatMessage) {
+//        messageRepo.insert(message)
+//
+//    }
+//}
 
 @Configuration
 @EnableReactiveCassandraRepositories( basePackageClasses = [ChatUser::class])

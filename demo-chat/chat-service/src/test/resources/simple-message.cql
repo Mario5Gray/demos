@@ -10,4 +10,4 @@ room_id UUID,
 text    varchar,
 timestamp timestamp,
 visible Boolean,
-PRIMARY KEY (room_id, visible));
+PRIMARY KEY (room_id));
