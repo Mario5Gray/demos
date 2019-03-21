@@ -27,10 +27,32 @@ import java.util.*
 @CassandraUnit
 @TestExecutionListeners(CassandraUnitDependencyInjectionTestExecutionListener::class, DependencyInjectionTestExecutionListener::class)
 @CassandraDataSet("simple-user.cql")
-class UserPersistenceTests {
+class ChatUserTests {
 
     @Autowired
     lateinit var template: ReactiveCassandraTemplate
+
+    @Test
+    fun testShouldUserCreateAndReactivate() {
+        val uuid = UUID.randomUUID()
+        val user = ChatUser(uuid, "Eddie", "EddiesHandle", Time.valueOf(LocalTime.now()))
+
+        assertAll("user",
+                { assertNotNull(user) },
+                { assertEquals(uuid, user.id) },
+                { assertEquals("Eddie", user.handle) },
+                { assertEquals("EddiesHandle", user.name) })
+
+        StepVerifier
+                .create(Flux.just(user))
+                .assertNext { u ->
+                    assertAll("simple user assertion",
+                            { assertNotNull(u) },
+                            { assertEquals(uuid, u.id) }
+                    )
+                }
+                .verifyComplete()
+    }
 
     @Test
     fun shouldContextLoad() {
