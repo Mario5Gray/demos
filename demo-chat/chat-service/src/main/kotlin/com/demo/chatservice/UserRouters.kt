@@ -17,21 +17,21 @@ class UserRouters {
 
     @Bean
     fun routes(repo: ChatUserRepository): RouterFunction<ServerResponse> = router {
-            GET("/newuser") { req ->
-                ServerResponse
-                        .ok()
-                        .body(repo
-                                .insert(ChatUser(UUID.randomUUID(),
-                                        req.queryParam("handle").orElseThrow { Exception("User Not Found") },
-                                        req.queryParam("name").orElse("Horus"),
-                                        Time.valueOf(LocalTime.now())
-                                ))
-                                .map {
-                                    UserResponse(it.id, it.handle, it.timestamp)
-                                }
-                        )
-            }
-
+        POST("/newuser") { req ->
+            ServerResponse
+                    .ok()
+                    .body(repo
+                            .insert(ChatUser(UUID.randomUUID(),
+                                    req.queryParam("handle").orElseThrow { Exception("User Handle Expected.") },
+                                    req.queryParam("name").orElse("Horus"),
+                                    Time.valueOf(LocalTime.now())
+                            ))
+                            .map {
+                                UserResponse(it.id, it.handle, it.timestamp)
+                            }
+                    )
         }
+
     }
+}
 
