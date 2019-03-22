@@ -28,7 +28,7 @@ import java.util.*
 @CassandraDataSet("simple-user.cql")
 class ChatUserRepositoryTests {
     @Autowired
-    lateinit var repo: ChatUserCrudRepository
+    lateinit var repo: ChatUserRepository
 
     @Test
     fun shouldFindDarkbit() {
@@ -75,7 +75,7 @@ class ChatUserRepositoryTests {
     }
 }
 
-fun setUp(repo: ChatUserCrudRepository): Mono<Void> {
+fun setUp(repo: ChatUserRepository): Mono<Void> {
 
     val user1 = ChatUser(UUID.randomUUID(), "vedder", "eddie", Time.valueOf(LocalTime.now()))
     val user2 = ChatUser(UUID.randomUUID(), "darkbit", "mario", Time.valueOf(LocalTime.now()))

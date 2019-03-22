@@ -14,7 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 class ChatUserHttpTests {
 
     @Autowired
-    lateinit var repo: ChatUserCrudRepository
+    lateinit var repo: ChatUserRepository
 
     @Test
     fun shouldGetAUserUUID() {
