@@ -10,7 +10,7 @@ import java.util.*
 data class ChatUser(
         @PrimaryKey
         @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 1)
-        var id: UUID?,
+        var id: UUID,
         val handle: String,
         val name: String,
         val timestamp: Date
