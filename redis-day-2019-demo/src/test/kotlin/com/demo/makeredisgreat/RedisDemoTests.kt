@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.reactivestreams.Publisher
+import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.ReactiveRedisTemplate
@@ -22,6 +23,7 @@ import redis.embedded.RedisServer
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 
+@DataRedisTest
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RedisDemoTests {
@@ -41,7 +43,7 @@ class RedisDemoTests {
 
         redisServer.start()
 
-        lettuce = LettuceConnectionFactory(RedisStandaloneConfiguration("127.0.0.1", 6379))
+        lettuce = LettuceConnectionFactory(RedisStandaloneConfiguration("127.0.0.1", port))
 
         lettuce.afterPropertiesSet()
 

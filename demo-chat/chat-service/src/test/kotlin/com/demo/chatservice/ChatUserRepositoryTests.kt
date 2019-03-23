@@ -38,7 +38,6 @@ class ChatUserRepositoryTests {
                 .from(setUp(repo))
                 .then(findFlux)
 
-
         StepVerifier
                 .create(setupAndFind)
                 .expectSubscription()
@@ -61,7 +60,6 @@ class ChatUserRepositoryTests {
                 .assertNext { userAssertions(it, "vedder", "eddie") }
                 .verifyComplete()
     }
-
 
     // helper function to verify user state
     fun userAssertions(user: ChatUser, handle: String?, name: String?) {

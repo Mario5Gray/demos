@@ -20,19 +20,15 @@ import java.util.*
 class ChatUserHttpTests {
 
     @MockBean
-    lateinit var repo: ChatUserRepository
+    lateinit var service: ChatService
 
     @BeforeEach
     fun setUp() {
         val monoUser = ChatUser(UUID.randomUUID(), "EddieVedder", "Eddie", Time.valueOf(LocalTime.now()))
-        Mockito
-                .`when`(repo.findByHandle(Mockito.anyString()))
-                .thenReturn(Mono.just(
-                        monoUser
-                ))
+
 
         Mockito
-                .`when`(repo.insert(Mockito.any<ChatUser>()))
+                .`when`(service.newUser(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Mono.just(monoUser))
 
     }
@@ -40,7 +36,7 @@ class ChatUserHttpTests {
     @Test
     fun shouldGetAUserUUID() {
         WebTestClient
-                .bindToRouterFunction(UserRouters().routes(repo))
+                .bindToRouterFunction(AppRouters(service).routes())
                 .build()
                 .post()
                 .uri("/newuser?handle=EddieVedder")

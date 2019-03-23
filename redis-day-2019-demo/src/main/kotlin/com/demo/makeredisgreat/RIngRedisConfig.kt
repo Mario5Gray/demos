@@ -26,7 +26,7 @@ class RingRedisConfig {
     fun redisConnectionFactory(): ReactiveRedisConnectionFactory = LettuceConnectionFactory()
 
     @Bean
-    fun ringCache(cf: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, Ring> {
+    fun someCache(cf: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, Ring> {
         val keys = StringRedisSerializer()
         val values = Jackson2JsonRedisSerializer(Ring::class.java)
         values.setObjectMapper(jacksonObjectMapper())           // KOTLIN USERS : use setObjectMapper!

@@ -17,6 +17,8 @@ import org.springframework.data.cassandra.core.query.where
 import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.core.publisher.switchIfEmpty
 import reactor.test.StepVerifier
 import java.sql.Time
 import java.time.LocalTime
@@ -35,6 +37,19 @@ class ChatRoomRepoTests {
     @Autowired
     lateinit var template: ReactiveCassandraTemplate
 
+
+    @Test
+    fun `should fail to find room`() {
+        val queryFlux = repo
+                .findById(UUID.randomUUID())
+                .switchIfEmpty { Mono.error(Exception("No Such Room")) }
+
+        StepVerifier
+                .create(queryFlux)
+                .expectSubscription()
+                .expectError()
+                .verify()
+    }
 
     @Test
     fun testShouldSaveFindByName() {
