@@ -32,7 +32,7 @@ import java.util.*
 class ChatRoomRepoTests {
 
     @Autowired
-    lateinit var repo: ChatRoomRepository
+    lateinit var repo: ChatRoomRepositoryImpl
 
     @Autowired
     lateinit var template: ReactiveCassandraTemplate
@@ -49,6 +49,30 @@ class ChatRoomRepoTests {
                 .expectSubscription()
                 .expectError()
                 .verify()
+    }
+
+    @Test
+    fun `should join a ficticious room`() {
+        val roomId = UUID.randomUUID()
+        val userId = UUID.randomUUID()
+
+        val saveFlux = repo
+                .insert(Flux.just(
+                        ChatRoom(roomId, "XYZ", Collections.emptySet(), Time.valueOf(LocalTime.now()))
+                ))
+
+        val joinFlux = repo
+                .joinRoom(userId, roomId)
+
+        val composite = Flux
+                .from(saveFlux)
+                .then(joinFlux)
+
+        StepVerifier
+                .create(composite)
+                .expectSubscription()
+                .assertNext(Assertions::assertTrue)
+                .verifyComplete()
     }
 
     @Test

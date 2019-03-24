@@ -8,9 +8,7 @@ import java.util.*
 
 @Component
 class ChatService(val userRepo: ChatUserRepository,
-                  val roomRepo: ChatRoomRepositoryImpl) {
-
-
+                  val roomRepo: ChatRoomRepository) {
     fun newUser(handle: String, name: String): Mono<ChatUser> =
             userRepo
                     .insert(ChatUser(UUID.randomUUID(),

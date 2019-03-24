@@ -2,6 +2,7 @@ package com.demo.chatservice
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
+import org.springframework.data.cassandra.core.mapping.MapId
 import org.springframework.data.cassandra.core.query.ColumnName
 import org.springframework.data.cassandra.core.query.Query
 import org.springframework.data.cassandra.core.query.Update
@@ -10,25 +11,33 @@ import org.springframework.data.cassandra.repository.AllowFiltering
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository
+import org.springframework.data.repository.NoRepositoryBean
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
 
 
 interface ChatRoomRepository : ReactiveCassandraRepository<ChatRoom, UUID> {
-
     @AllowFiltering
     fun findByName(name: String): Flux<ChatRoom>
 }
 
-class ChatRoomRepositoryImpl( metadata: CassandraEntityInformation<ChatRoom, UUID>,
-                              operations: ReactiveCassandraOperations,
-                             val roomRepository: ChatRoomRepository,
-                             val template: ReactiveCassandraTemplate) :
-        SimpleReactiveCassandraRepository<ChatRoom, UUID>(metadata, operations) {
+@NoRepositoryBean
+interface ChatRoomRepositoryBase<T> {
 
-    fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean> =
-            roomRepository.findById(roomId)
+    fun leaveRoom(uid: UUID, roomId: UUID): Mono<Boolean>
+    fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean>
+}
+
+class ChatRoomRepositoryBaseImpl<T>(
+        private val metadata: CassandraEntityInformation<T, UUID>,
+        private val operations: ReactiveCassandraOperations,
+        private val template: ReactiveCassandraTemplate) :
+        SimpleReactiveCassandraRepository<T, UUID>(metadata, operations),
+        ChatRoomRepositoryBase<T> {
+
+    override fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean> =
+            findById(roomId)
                     .flatMap {
                         template
                                 .update(Query.query(where("id").`is`(roomId)),
@@ -41,8 +50,8 @@ class ChatRoomRepositoryImpl( metadata: CassandraEntityInformation<ChatRoom, UUI
                     }
                     .defaultIfEmpty(false)
 
-    fun leaveRoom(uid: UUID, roomId: UUID): Mono<Boolean> =
-            roomRepository.findById(roomId)
+    override fun leaveRoom(uid: UUID, roomId: UUID): Mono<Boolean> =
+            findById(roomId)
                     .flatMap {
                         template
                                 .update(Query.query(where("id").`is`(roomId)),
@@ -50,6 +59,6 @@ class ChatRoomRepositoryImpl( metadata: CassandraEntityInformation<ChatRoom, UUI
                                                 ColumnName.from("members"),
                                                 listOf(uid)))),
                                         ChatRoom::class.java
-                                        )
+                                )
                     }
 }

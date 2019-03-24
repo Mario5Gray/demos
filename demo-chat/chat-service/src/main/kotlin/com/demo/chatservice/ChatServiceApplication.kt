@@ -3,19 +3,14 @@ package com.demo.chatservice
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.cloud.stream.annotation.EnableBinding
-import org.springframework.cloud.stream.annotation.StreamListener
-import org.springframework.cloud.stream.messaging.Sink
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.data.cassandra.config.AbstractReactiveCassandraConfiguration
 import org.springframework.data.cassandra.config.CassandraClusterFactoryBean
 import org.springframework.data.cassandra.config.SchemaAction
-import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories
 
 
+@EnableReactiveCassandraRepositories(basePackageClasses = [ChatUser::class])
 @SpringBootApplication
 class ChatServiceApplication
 
@@ -34,10 +29,6 @@ fun main(args: Array<String>) {
 //}
 
 @Configuration
-@EnableReactiveCassandraRepositories( basePackageClasses = [ChatUser::class])
-class ReactiveCassandraConfiguration
-
-@Configuration
 class CassandraConfiguration : AbstractReactiveCassandraConfiguration() {
     @Value("\${cassandra.contactpoints:127.0.0.1}")
     private lateinit var contactPoints: String
@@ -47,7 +38,6 @@ class CassandraConfiguration : AbstractReactiveCassandraConfiguration() {
     private lateinit var keyspace: String
     @Value("\${cassandra.basepackages:com.demo.chatservice}")
     private lateinit var basePackages: String
-
 
     override fun getKeyspaceName(): String {
         return keyspace
