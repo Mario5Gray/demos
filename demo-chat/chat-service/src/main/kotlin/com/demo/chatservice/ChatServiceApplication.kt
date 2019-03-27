@@ -1,68 +1,24 @@
 package com.demo.chatservice
 
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Configuration
-import org.springframework.data.cassandra.config.AbstractReactiveCassandraConfiguration
-import org.springframework.data.cassandra.config.CassandraClusterFactoryBean
-import org.springframework.data.cassandra.config.SchemaAction
-import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories
+import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Bean
+import org.springframework.data.cassandra.repository.query.CassandraEntityMetadata
 
 
-@EnableReactiveCassandraRepositories(basePackageClasses = [ChatUser::class])
 @SpringBootApplication
-class ChatServiceApplication
+class ChatServiceApplication {
+    @Bean
+    fun appRun(context: ApplicationContext) = ApplicationRunner {
+        val metadata = context.getBeanNamesForType(CassandraEntityMetadata::class.java)
+        System.out.println("IAMRUN")
+        metadata.forEach { System.out.println("METADATA: $it") }
+    }
+}
 
 fun main(args: Array<String>) {
     runApplication<ChatServiceApplication>(*args)
 }
 
-//@Configuration
-//@EnableBinding(Sink::class)
-//class StreamConfiguration(val messageRepo: ChatMessageRepository) {
-//    @StreamListener(Sink.INPUT)
-//    fun handleMessage(message: ChatMessage) {
-//        messageRepo.insert(message)
-//
-//    }
-//}
-
-@Configuration
-class CassandraConfiguration : AbstractReactiveCassandraConfiguration() {
-    @Value("\${cassandra.contactpoints:127.0.0.1}")
-    private lateinit var contactPoints: String
-    @Value("\${cassandra.port:9142}")
-    private lateinit var port: Integer
-    @Value("\${cassandra.keyspace:chat}")
-    private lateinit var keyspace: String
-    @Value("\${cassandra.basepackages:com.demo.chatservice}")
-    private lateinit var basePackages: String
-
-    override fun getKeyspaceName(): String {
-        return keyspace
-    }
-
-    override fun getContactPoints(): String {
-        return contactPoints
-    }
-
-    override fun getPort(): Int {
-        return port.toInt()
-    }
-
-    override fun getSchemaAction(): SchemaAction {
-        return SchemaAction.NONE
-    }
-
-    override fun getEntityBasePackages(): Array<String> {
-        return arrayOf(basePackages)
-    }
-
-    override
-    fun cluster(): CassandraClusterFactoryBean {
-        val cluster = super.cluster()
-        cluster.setJmxReportingEnabled(false)
-        return cluster
-    }
-}
