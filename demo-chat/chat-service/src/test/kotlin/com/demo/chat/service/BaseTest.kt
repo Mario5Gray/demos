@@ -1,4 +1,4 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
 import org.mockito.Mockito
 

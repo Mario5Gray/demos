@@ -1,5 +1,7 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
+import com.demo.chat.ChatServiceApplication
+import com.demo.chat.domain.ChatUser
 import org.cassandraunit.spring.CassandraDataSet
 import org.cassandraunit.spring.CassandraUnit
 import org.cassandraunit.spring.CassandraUnitDependencyInjectionTestExecutionListener

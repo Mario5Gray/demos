@@ -1,4 +1,4 @@
-package com.demo.chatservice
+package com.demo.chat.domain
 
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType
 import org.springframework.data.cassandra.core.mapping.PrimaryKey

@@ -1,5 +1,6 @@
-package com.demo.chatservice
+package com.demo.chat.repository
 
+import com.demo.chat.domain.ChatMessage
 import org.springframework.data.cassandra.repository.AllowFiltering
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository
 import reactor.core.publisher.Flux

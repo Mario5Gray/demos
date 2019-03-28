@@ -1,4 +1,4 @@
-package com.demo.chatservice
+package com.demo.chat
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

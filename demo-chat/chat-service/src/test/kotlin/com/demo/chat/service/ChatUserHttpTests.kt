@@ -1,5 +1,6 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
+import com.demo.chat.domain.ChatUser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

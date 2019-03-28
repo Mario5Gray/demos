@@ -1,4 +1,4 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

@@ -1,16 +1,16 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
+import com.demo.chat.ChatServiceApplication
+import com.demo.chat.domain.ChatRoom
+import com.demo.chat.repository.ChatRoomRepository
 import org.cassandraunit.spring.CassandraDataSet
 import org.cassandraunit.spring.CassandraUnit
 import org.cassandraunit.spring.CassandraUnitDependencyInjectionTestExecutionListener
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
 import org.springframework.data.cassandra.core.query.ColumnName
@@ -24,7 +24,6 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.switchIfEmpty
 import reactor.test.StepVerifier
 import java.sql.Time
-import java.time.Instant
 import java.time.LocalTime
 import java.util.*
 

@@ -1,5 +1,10 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
+import com.demo.chat.domain.ChatMessage
+import com.demo.chat.domain.ChatRoom
+import com.demo.chat.domain.ChatUser
+import com.demo.chat.repository.ChatRoomRepository
+import com.demo.chat.repository.ChatUserRepository
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
 import org.springframework.data.cassandra.core.query.ColumnName
 import org.springframework.data.cassandra.core.query.Query

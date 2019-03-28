@@ -1,5 +1,6 @@
-package com.demo.chatservice
+package com.demo.chat.service
 
+import com.demo.chat.domain.ChatRoom
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
