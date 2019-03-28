@@ -14,6 +14,5 @@ interface ChatUserRepository : ReactiveCassandraRepository<ChatUser, UUID> {
     @AllowFiltering
     fun findByName(handleQuery: String): Flux<ChatUser>
 
-    fun findById(id: String): Mono<ChatUser>
-
+    override fun findById(uuid: UUID): Mono<ChatUser>
 }

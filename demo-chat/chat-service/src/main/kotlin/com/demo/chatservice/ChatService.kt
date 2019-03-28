@@ -23,8 +23,11 @@ class ChatService(val userRepo: ChatUserRepository,
                             Time.valueOf(LocalTime.now())
                     ))
 
-    fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean> = roomRepo
-            .findById(roomId)
+    fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean> = Mono
+            .zip(roomRepo.findById(roomId), userRepo.findById(uid))
+            .filter {
+                it.t1 != null && it.t2 != null
+            }
             .flatMap {
                 template
                         .update(Query.query(where("id").`is`(roomId)),
@@ -38,8 +41,11 @@ class ChatService(val userRepo: ChatUserRepository,
             .defaultIfEmpty(false)
 
 
-    fun leaveRoom(uid: UUID, roomId: UUID): Mono<Boolean> = roomRepo
-            .findById(roomId)
+    fun leaveRoom(uid: UUID, roomId: UUID): Mono<Boolean> = Mono
+            .zip(roomRepo.findById(roomId), userRepo.findById(uid))
+            .filter {
+                it.t1 != null && it.t2 != null
+            }
             .flatMap {
                 template
                         .update(Query.query(where("id").`is`(roomId)),
@@ -49,7 +55,6 @@ class ChatService(val userRepo: ChatUserRepository,
                                 ChatRoom::class.java
                         )
             }
-            //.leaveRoom(UUID.fromString(uid), UUID.fromString(roomId))
 
     fun sendMessage(uid: String, roomId: String, messageText: String): Mono<ChatMessage> =
             Mono
