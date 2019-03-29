@@ -3,6 +3,7 @@ package com.demo.chat.service
 import com.demo.chat.domain.ChatMessage
 import com.demo.chat.domain.ChatRoom
 import com.demo.chat.domain.ChatUser
+import com.demo.chat.repository.ChatMessageRepository
 import com.demo.chat.repository.ChatRoomRepository
 import com.demo.chat.repository.ChatUserRepository
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
@@ -11,15 +12,23 @@ import org.springframework.data.cassandra.core.query.Query
 import org.springframework.data.cassandra.core.query.Update
 import org.springframework.data.cassandra.core.query.where
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.switchIfEmpty
+import reactor.core.publisher.toFlux
 import java.sql.Time
 import java.time.LocalTime
 import java.util.*
 
+open class ChatException(msg: String) : Exception(msg)
+object UserNotFoundException : ChatException("User not Found")
+object RoomNotFoundException : ChatException("Room not Found")
+
 @Component
 class ChatService(val userRepo: ChatUserRepository,
                   val roomRepo: ChatRoomRepository,
-                  val template: ReactiveCassandraTemplate) {
+                  val messageRepo: ChatMessageRepository) {
+
     fun newUser(handle: String, name: String): Mono<ChatUser> =
             userRepo
                     .insert(ChatUser(UUID.randomUUID(),
@@ -28,47 +37,49 @@ class ChatService(val userRepo: ChatUserRepository,
                             Time.valueOf(LocalTime.now())
                     ))
 
-    fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean> = Mono
-            .zip(roomRepo.findById(roomId), userRepo.findById(uid))
-            .filter {
-                it.t1 != null && it.t2 != null
-            }
+    fun newRoom(uid: UUID, name: String): Mono<ChatRoom> = userRepo.findById(uid)
+            .switchIfEmpty { Mono.error(ChatException("user not found")) }
             .flatMap {
-                template
-                        .update(Query.query(where("id").`is`(roomId)),
-                                Update.of(listOf(Update.AddToOp(
-                                        ColumnName.from("members"),
-                                        listOf(uid),
-                                        Update.AddToOp.Mode.APPEND))),
-                                ChatRoom::class.java
-                        )
+                roomRepo
+                        .insert(ChatRoom(UUID.randomUUID(), name, emptySet(), Date()))
+            }
+
+    fun joinRoom(uid: UUID, roomId: UUID): Mono<Boolean> = Mono
+            .from(findRoomAndUser(uid, roomId))
+            .flatMap {
+                roomRepo.joinRoom(uid, roomId)
             }
             .defaultIfEmpty(false)
 
 
     fun leaveRoom(uid: UUID, roomId: UUID): Mono<Boolean> = Mono
-            .zip(roomRepo.findById(roomId), userRepo.findById(uid))
-            .filter {
-                it.t1 != null && it.t2 != null
-            }
+            .from(findRoomAndUser(uid, roomId))
             .flatMap {
-                template
-                        .update(Query.query(where("id").`is`(roomId)),
-                                Update.of(listOf(Update.RemoveOp(
-                                        ColumnName.from("members"),
-                                        listOf(uid)))),
-                                ChatRoom::class.java
-                        )
+                roomRepo.leaveRoom(uid, roomId)
+            }
+            .defaultIfEmpty(false)
+
+    fun sendMessage(uid: UUID, roomId: UUID, messageText: String): Mono<ChatMessage> = Mono
+            .from(findRoomAndUser(uid, roomId))
+            .flatMap {
+                messageRepo
+                        .insert(ChatMessage(UUID.randomUUID(),
+                                uid,
+                                roomId,
+                                messageText,
+                                Time.valueOf(LocalTime.now()),
+                                true))
             }
 
-    fun sendMessage(uid: String, roomId: String, messageText: String): Mono<ChatMessage> =
-            Mono
-                    .just(ChatMessage(UUID.randomUUID(),
-                            UUID.fromString(uid),
-                            UUID.fromString(roomId),
-                            messageText,
-                            Time.valueOf(LocalTime.now()),
-                            true)
-                    )
+    fun getMessagesForRoom(uid: UUID, roomId: UUID): Flux<ChatMessage> = Mono
+            .from(findRoomAndUser(uid, roomId))
+            .toFlux()
+            .flatMap {
+                messageRepo.findByRoomId(roomId)
+            }
+
+    private fun findRoomAndUser(uid: UUID, roomId: UUID) = Flux.zip(
+            userRepo.findById(uid).switchIfEmpty { System.out.println("UserNotFoundException"); Mono.error(UserNotFoundException) },
+            roomRepo.findById(roomId).switchIfEmpty { Mono.error(RoomNotFoundException) })
 
 }

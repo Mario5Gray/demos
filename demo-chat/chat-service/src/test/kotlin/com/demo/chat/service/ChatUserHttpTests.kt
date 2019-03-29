@@ -26,8 +26,6 @@ class ChatUserHttpTests {
     @BeforeEach
     fun setUp() {
         val monoUser = ChatUser(UUID.randomUUID(), "EddieVedder", "Eddie", Time.valueOf(LocalTime.now()))
-
-
         Mockito
                 .`when`(service.newUser(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Mono.just(monoUser))
