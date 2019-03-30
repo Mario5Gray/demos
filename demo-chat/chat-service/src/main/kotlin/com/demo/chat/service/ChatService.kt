@@ -1,6 +1,7 @@
 package com.demo.chat.service
 
 import com.demo.chat.domain.ChatMessage
+import com.demo.chat.domain.ChatMessageKey
 import com.demo.chat.domain.ChatRoom
 import com.demo.chat.domain.ChatUser
 import com.demo.chat.repository.ChatMessageRepository
@@ -63,11 +64,11 @@ class ChatService(val userRepo: ChatUserRepository,
             .from(findRoomAndUser(uid, roomId))
             .flatMap {
                 messageRepo
-                        .insert(ChatMessage(UUID.randomUUID(),
+                        .insert(ChatMessage(ChatMessageKey(UUID.randomUUID(),
                                 uid,
                                 roomId,
+                                Date()),
                                 messageText,
-                                Time.valueOf(LocalTime.now()),
                                 true))
             }
 
@@ -77,6 +78,8 @@ class ChatService(val userRepo: ChatUserRepository,
             .flatMap {
                 messageRepo.findByRoomId(roomId)
             }
+
+    //fun getMessagesSince(uid: UUID, roomId: UUID, time: Date): Flux<ChatMessage> =
 
     private fun findRoomAndUser(uid: UUID, roomId: UUID) = Flux.zip(
             userRepo.findById(uid).switchIfEmpty { System.out.println("UserNotFoundException"); Mono.error(UserNotFoundException) },

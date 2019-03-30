@@ -1,6 +1,7 @@
 package com.demo.chat.service
 
 import com.demo.chat.domain.ChatMessage
+import com.demo.chat.domain.ChatMessageKey
 import com.demo.chat.domain.ChatRoom
 import com.demo.chat.domain.ChatUser
 import com.demo.chat.repository.ChatMessageRepository
@@ -54,7 +55,7 @@ class ChatServiceTests {
 
         val newUser = ChatUser(uid, "test-handle", "test-name", Date())
         val newRoom = ChatRoom(rid, "test-room", emptySet(), Date())
-        val newMessage = ChatMessage(UUID.randomUUID(), uid, rid, "SUP TEST", Date(), true)
+        val newMessage = ChatMessage(ChatMessageKey(UUID.randomUUID(), uid, rid, Date()), "SUP TEST", true)
 
         Mockito.`when`(userRepo.findById(anyObject<UUID>()))
                 .thenReturn(Mono.just(newUser))
@@ -103,7 +104,7 @@ class ChatServiceTests {
                     assertAll("messages",
                             { assertNotNull(it) },
                             { assertEquals(it.text, "SUP TEST") },
-                            { assertNotNull(it.timestamp) }
+                            { assertNotNull(it.key.timestamp) }
 
                     )
                 }
@@ -131,8 +132,8 @@ class ChatServiceTests {
                 .expectSubscription()
                 .assertNext {
                     assertAll("message",
-                            { assertEquals(it.userId, userId) },
-                            { assertEquals(it.roomId, roomId) }
+                            { assertEquals(it.key.userId, userId) },
+                            { assertEquals(it.key.roomId, roomId) }
                     )
                 }
     }

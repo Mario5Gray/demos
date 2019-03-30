@@ -2,6 +2,7 @@ package com.demo.chat.service
 
 import com.demo.chat.ChatServiceApplication
 import com.demo.chat.domain.ChatMessage
+import com.demo.chat.domain.ChatMessageKey
 import com.demo.chat.repository.ChatMessageRepository
 import org.cassandraunit.spring.CassandraDataSet
 import org.cassandraunit.spring.CassandraUnit
@@ -18,9 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
-import java.sql.Time
 import java.time.Duration
-import java.time.LocalTime
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -40,7 +39,7 @@ class ChatMessageRepositoryTests {
         val roomId = UUID.randomUUID()
         val msgId = UUID.randomUUID()
 
-        val saveMsg = repo.insert(ChatMessage(msgId, userId, roomId, "Welcome", Time.valueOf(LocalTime.now()), true))
+        val saveMsg = repo.insert(ChatMessage(ChatMessageKey(msgId, userId, roomId, Date()), "Welcome", true))
         val findMsg = repo.findByRoomId(roomId)
 
         val composite = Flux
@@ -59,13 +58,13 @@ class ChatMessageRepositoryTests {
 
         val chatMessageFlux = Flux
                 .just(
-                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
-                        ChatMessage(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
-                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
-                        ChatMessage(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), false),
-                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
-                        ChatMessage(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), true),
-                        ChatMessage(UUID.randomUUID(), userId, UUID.randomUUID(), "Welcome", Time.valueOf(LocalTime.now()), false)
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Date()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Date()), "Welcome", false),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Date()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", false)
                 ).delayElements(Duration.ofSeconds(2))
 
         val saveMessages = repo.insert(chatMessageFlux)
@@ -84,9 +83,9 @@ class ChatMessageRepositoryTests {
     fun chatMessageAssertion(msg: ChatMessage) {
         assertAll("message contents in tact",
                 { Assertions.assertNotNull(msg) },
-                { Assertions.assertNotNull(msg.id) },
-                { Assertions.assertNotNull(msg.userId) },
-                { Assertions.assertNotNull(msg.roomId) },
+                { Assertions.assertNotNull(msg.key.id) },
+                { Assertions.assertNotNull(msg.key.userId) },
+                { Assertions.assertNotNull(msg.key.roomId) },
                 { Assertions.assertNotNull(msg.text) },
                 { Assertions.assertEquals(msg.text, "Welcome") },
                 { Assertions.assertTrue(msg.visible) }
