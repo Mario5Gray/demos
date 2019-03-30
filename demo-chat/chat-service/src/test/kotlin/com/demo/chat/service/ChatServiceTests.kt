@@ -6,10 +6,14 @@ import com.demo.chat.domain.ChatUser
 import com.demo.chat.repository.ChatMessageRepository
 import com.demo.chat.repository.ChatRoomRepository
 import com.demo.chat.repository.ChatUserRepository
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration
@@ -82,25 +86,25 @@ class ChatServiceTests {
         val roomId = UUID.randomUUID()
         val userId = UUID.randomUUID()
 
-        val saveRoomFlux = service.newUser("Handle", "test")
-                .doOnNext {
-                    System.out.println("USER CREATED: ${it.id}")
-                }
-
         val sendMessageFlux = service
                 .sendMessage(userId, roomId, "Hello there")
 
+        val getMessageFlux = service
+                .getMessagesForRoom(userId, roomId)
+
         val saveAndSend = Mono
-                .from(saveRoomFlux)
-                .then(sendMessageFlux)
+                .from(sendMessageFlux)
+                .thenMany(getMessageFlux)
 
         StepVerifier
                 .create(saveAndSend)
                 .expectSubscription()
                 .assertNext {
-                    assertAll("message",
-                            { assertEquals(it.userId, userId) },
-                            { assertEquals(it.roomId, roomId) }
+                    assertAll("messages",
+                            { assertNotNull(it) },
+                            { assertEquals(it.text, "SUP TEST") },
+                            { assertNotNull(it.timestamp) }
+
                     )
                 }
     }
@@ -131,6 +135,43 @@ class ChatServiceTests {
                             { assertEquals(it.roomId, roomId) }
                     )
                 }
+    }
+
+    @Test
+    fun `should create and write to new room`() {
+        val userId = UUID.randomUUID()
+        val logger = LoggerFactory.getLogger(this::class.java)
+
+        val messages = service.newRoom(userId, "TEST")
+                .flatMap { room ->
+                    service.sendMessage(userId, room.id, "TEST")
+                            .flatMap { msgSent ->
+                                service.getMessagesForRoom(userId, room.id)
+                                        .doOnNext { msgRcv ->
+                                            logger.info("Message: ${msgRcv.text}")
+                                            msgRcv
+                                        }
+                                        .collectList()
+                            }
+                }
+
+        StepVerifier
+                .create(messages)
+                .expectSubscription()
+                .assertNext {
+                    assertAll("Messages were received",
+                            { assertNotNull(it) },
+                            {
+                                MatcherAssert
+                                        .assertThat(it,
+                                                Matchers.allOf(
+                                                        Matchers.not(Matchers.emptyCollectionOf(ChatMessage::class.java))
+                                                ))
+                            }
+                    )
+                }
+                .verifyComplete()
+
     }
 
     @Test
