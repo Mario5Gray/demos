@@ -47,4 +47,6 @@ class ChatRoomRepositoryCustomImpl(val template: ReactiveCassandraTemplate) :
                             ChatRoom::class.java
                     )
                     .defaultIfEmpty(false)
+
+
 }

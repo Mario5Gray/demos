@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.time.Instant
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -20,7 +21,7 @@ class ChatMessageTests {
         val msgUUID = UUID.randomUUID()
         val roomUUID = UUID.randomUUID()
 
-        val message = ChatMessage(ChatMessageKey(msgUUID, userUUID, roomUUID, Date()), "Welcome", true)
+        val message = ChatMessage(ChatMessageKey(msgUUID, userUUID, roomUUID, Instant.now()), "Welcome", true)
 
         StepVerifier
                 .create(Flux.just(message))

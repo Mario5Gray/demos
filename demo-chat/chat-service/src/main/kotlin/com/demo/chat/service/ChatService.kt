@@ -7,17 +7,13 @@ import com.demo.chat.domain.ChatUser
 import com.demo.chat.repository.ChatMessageRepository
 import com.demo.chat.repository.ChatRoomRepository
 import com.demo.chat.repository.ChatUserRepository
-import org.springframework.data.cassandra.core.ReactiveCassandraTemplate
-import org.springframework.data.cassandra.core.query.ColumnName
-import org.springframework.data.cassandra.core.query.Query
-import org.springframework.data.cassandra.core.query.Update
-import org.springframework.data.cassandra.core.query.where
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.switchIfEmpty
 import reactor.core.publisher.toFlux
 import java.sql.Time
+import java.time.Instant
 import java.time.LocalTime
 import java.util.*
 
@@ -67,7 +63,7 @@ class ChatService(val userRepo: ChatUserRepository,
                         .insert(ChatMessage(ChatMessageKey(UUID.randomUUID(),
                                 uid,
                                 roomId,
-                                Date()),
+                                Instant.now()),
                                 messageText,
                                 true))
             }
@@ -76,7 +72,7 @@ class ChatService(val userRepo: ChatUserRepository,
             .from(findRoomAndUser(uid, roomId))
             .toFlux()
             .flatMap {
-                messageRepo.findByRoomId(roomId)
+                messageRepo.findByKeyRoomId(roomId)
             }
 
     //fun getMessagesSince(uid: UUID, roomId: UUID, time: Date): Flux<ChatMessage> =

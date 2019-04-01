@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration
@@ -24,8 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.sql.Time
-import java.time.LocalTime
+import java.time.Instant
 import java.util.*
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [ChatService::class])
@@ -47,15 +45,15 @@ class ChatServiceTests {
     @MockBean
     lateinit var userRepo: ChatUserRepository
 
+    val rid: UUID = UUID.randomUUID()
+
+    val uid: UUID = UUID.randomUUID()
 
     @BeforeEach
     fun setUp() {
-        val uid = UUID.randomUUID()
-        val rid = UUID.randomUUID()
-
         val newUser = ChatUser(uid, "test-handle", "test-name", Date())
         val newRoom = ChatRoom(rid, "test-room", emptySet(), Date())
-        val newMessage = ChatMessage(ChatMessageKey(UUID.randomUUID(), uid, rid, Date()), "SUP TEST", true)
+        val newMessage = ChatMessage(ChatMessageKey(UUID.randomUUID(), uid, rid, Instant.now()), "SUP TEST", true)
 
         Mockito.`when`(userRepo.findById(anyObject<UUID>()))
                 .thenReturn(Mono.just(newUser))
@@ -78,7 +76,7 @@ class ChatServiceTests {
         Mockito.`when`(msgRepo.insert(anyObject<ChatMessage>()))
                 .thenReturn(Mono.just(newMessage))
 
-        Mockito.`when`(msgRepo.findByRoomId(anyObject<UUID>()))
+        Mockito.`when`(msgRepo.findByKeyRoomId(anyObject<UUID>()))
                 .thenReturn(Flux.just(newMessage))
     }
 
@@ -87,145 +85,62 @@ class ChatServiceTests {
         val roomId = UUID.randomUUID()
         val userId = UUID.randomUUID()
 
-        val sendMessageFlux = service
-                .sendMessage(userId, roomId, "Hello there")
-
-        val getMessageFlux = service
-                .getMessagesForRoom(userId, roomId)
-
-        val saveAndSend = Mono
-                .from(sendMessageFlux)
-                .thenMany(getMessageFlux)
-
-        StepVerifier
-                .create(saveAndSend)
-                .expectSubscription()
-                .assertNext {
-                    assertAll("messages",
-                            { assertNotNull(it) },
-                            { assertEquals(it.text, "SUP TEST") },
-                            { assertNotNull(it.key.timestamp) }
-
-                    )
+        val messages = service
+                .sendMessage(userId, roomId, "")
+                .flatMap {
+                    service.getMessagesForRoom(userId, roomId)
+                            .collectList()
                 }
-    }
 
-    @Test
-    fun `should send message to room`() {
-        val roomId = UUID.randomUUID()
-        val userId = UUID.randomUUID()
-
-        val saveRoomFlux =
-                roomRepo.save(
-                        ChatRoom(UUID.randomUUID(), "TEST", emptySet(), Date())
-                )
-
-        val sendMessageFlux = service
-                .sendMessage(userId, roomId, "Hello there")
-
-        val saveAndSend = Mono
-                .from(saveRoomFlux)
-                .then(sendMessageFlux)
-
-        StepVerifier
-                .create(saveAndSend)
-                .expectSubscription()
-                .assertNext {
-                    assertAll("message",
-                            { assertEquals(it.key.userId, userId) },
-                            { assertEquals(it.key.roomId, roomId) }
-                    )
-                }
-    }
-
-    @Test
-    fun `should create and write to new room`() {
-        val userId = UUID.randomUUID()
-        val logger = LoggerFactory.getLogger(this::class.java)
-
-        val messages = service.newRoom(userId, "TEST")
-                .flatMap { room ->
-                    service.sendMessage(userId, room.id, "TEST")
-                            .flatMap { msgSent ->
-                                service.getMessagesForRoom(userId, room.id)
-                                        .doOnNext { msgRcv ->
-                                            logger.info("Message: ${msgRcv.text}")
-                                            msgRcv
-                                        }
-                                        .collectList()
-                            }
-                }
 
         StepVerifier
                 .create(messages)
                 .expectSubscription()
                 .assertNext {
-                    assertAll("Messages were received",
+                    assertAll("messages",
                             { assertNotNull(it) },
                             {
                                 MatcherAssert
-                                        .assertThat(it,
-                                                Matchers.allOf(
-                                                        Matchers.not(Matchers.emptyCollectionOf(ChatMessage::class.java))
-                                                ))
+                                        .assertThat(it, Matchers
+                                                .not((Matchers.emptyCollectionOf(ChatMessage::class.java)))
+                                        )
+                            },
+                            {
+                                assertAll("message",
+                                        { assertEquals("SUP TEST", it.first().text) })
                             }
+
                     )
                 }
                 .verifyComplete()
-
     }
 
     @Test
-    fun `should fail to leave a ficticious room`() {
-        val roomId = UUID.randomUUID()
-        val userId = UUID.randomUUID()
-
-        val saveRoomFlux = roomRepo
-                .insert(Flux.just(
-                        ChatRoom(roomId, "XYZ", Collections.emptySet(), Time.valueOf(LocalTime.now()))
-                ))
-
-        val leaveFlux = service
-                .leaveRoom(userId, roomId)
-
-        val composite = Flux
-                .from(saveRoomFlux)
-                .then(leaveFlux)
+    fun `should send message to room`() {
+        val sendMessageFlux = service
+                .sendMessage(UUID.randomUUID(), UUID.randomUUID(), "Hello there")
 
         StepVerifier
-                .create(composite)
+                .create(sendMessageFlux)
                 .expectSubscription()
+                .assertNext {
+                    assertAll("message",
+                            { assertNotNull(it.key.userId) },
+                            { assertNotNull(it.key.roomId) },
+                            { assertEquals(it.text, "SUP TEST") }
+                    )
+                }
                 .verifyComplete()
     }
 
     @Test
     fun `should join and leave a ficticious room`() {
-        val roomId = UUID.randomUUID()
-        val userId = UUID.randomUUID()
-
-        Mockito.`when`(userRepo.findById(anyObject<UUID>()))
-                .thenReturn(Mono.just(
-                        ChatUser(userId, "handle", "name", Date())
-                ))
-
-        val saveFlux = roomRepo
-                .insert(Flux.just(
-                        ChatRoom(roomId, "XYZ", Collections.emptySet(), Date())
-                ))
-
-        val joinFlux = service
-                .joinRoom(userId, roomId)
-
-        val leaveFlux = service
-                .leaveRoom(userId, roomId)
-
-        val composite = Flux
-                .from(saveFlux)
-                .then(joinFlux)
-                .then(leaveFlux)
+        val serviceFlux = service
+                .joinRoom(uid, rid)
+                .thenMany(service.leaveRoom(uid, rid))
 
         StepVerifier
-                .create(composite)
+                .create(serviceFlux)
                 .expectSubscription()
                 .assertNext(Assertions::assertTrue)
                 .verifyComplete()

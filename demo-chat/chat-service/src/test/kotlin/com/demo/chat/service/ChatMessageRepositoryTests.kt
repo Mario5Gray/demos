@@ -7,10 +7,12 @@ import com.demo.chat.repository.ChatMessageRepository
 import org.cassandraunit.spring.CassandraDataSet
 import org.cassandraunit.spring.CassandraUnit
 import org.cassandraunit.spring.CassandraUnitDependencyInjectionTestExecutionListener
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -19,8 +21,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import reactor.test.publisher.TestPublisher
+import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 import java.util.*
+import java.util.concurrent.CountDownLatch
+import java.util.function.Supplier
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -39,8 +46,8 @@ class ChatMessageRepositoryTests {
         val roomId = UUID.randomUUID()
         val msgId = UUID.randomUUID()
 
-        val saveMsg = repo.insert(ChatMessage(ChatMessageKey(msgId, userId, roomId, Date()), "Welcome", true))
-        val findMsg = repo.findByRoomId(roomId)
+        val saveMsg = repo.insert(ChatMessage(ChatMessageKey(msgId, userId, roomId, Instant.now()), "Welcome", true))
+        val findMsg = repo.findByKeyRoomId(roomId)
 
         val composite = Flux
                 .from(saveMsg)
@@ -52,23 +59,73 @@ class ChatMessageRepositoryTests {
                 .verifyComplete()
     }
 
+    @Test // TODO WORKING WITH TIME
+    fun `verify key can propigate specific time state`() {
+        val logger: Logger = LoggerFactory.getLogger(this::class.java)
+        val userId = UUID.randomUUID()
+        val roomId = UUID.randomUUID()
+
+        val testPublisher = TestPublisher.create<ChatMessage>()
+
+        val testPublisherSupplier = Supplier {
+            testPublisher.flux().collectList()
+        }
+
+        StepVerifier.create (testPublisherSupplier.get())
+                .then {
+                    testPublisher
+                            .next(
+                                    ChatMessage(ChatMessageKey(
+                                            UUID.randomUUID(),
+                                            userId,
+                                            roomId,
+                                            Instant.now()
+                                    ),
+                                            "Hello",
+                                            true)
+                            )
+
+                }
+                .thenAwait(Duration.ofSeconds(5))
+                .then {
+                    testPublisher
+                            .emit(
+                                    ChatMessage(ChatMessageKey(
+                                            UUID.randomUUID(),
+                                            userId,
+                                            roomId,
+                                            Instant.now()
+                                    ),
+                                            "Hello",
+                                            true)
+                            )
+
+                }
+                .assertNext {
+                    assertEquals(2, it.size)
+                    assertTrue((it.get(1).key.timestamp.toEpochMilli() - it.get(0).key.timestamp.toEpochMilli())
+                     > 5000L )
+                }
+                .verifyComplete()
+    }
+
     @Test
     fun testShouldSaveFindMessagesByUserId() {
         val userId = UUID.randomUUID()
 
         val chatMessageFlux = Flux
                 .just(
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", true),
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Date()), "Welcome", true),
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", true),
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Date()), "Welcome", false),
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", true),
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Date()), "Welcome", true),
-                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Date()), "Welcome", false)
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Instant.now()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Instant.now()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Instant.now()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Instant.now()), "Welcome", false),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Instant.now()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Instant.now()), "Welcome", true),
+                        ChatMessage(ChatMessageKey(UUID.randomUUID(), userId, UUID.randomUUID(), Instant.now()), "Welcome", false)
                 ).delayElements(Duration.ofSeconds(2))
 
         val saveMessages = repo.insert(chatMessageFlux)
-        val findMessages = repo.findByUserId(userId)
+        val findMessages = repo.findByKeyUserId(userId)
         val composite = Flux
                 .from(saveMessages)
                 .thenMany(findMessages)
@@ -82,13 +139,13 @@ class ChatMessageRepositoryTests {
 
     fun chatMessageAssertion(msg: ChatMessage) {
         assertAll("message contents in tact",
-                { Assertions.assertNotNull(msg) },
-                { Assertions.assertNotNull(msg.key.id) },
-                { Assertions.assertNotNull(msg.key.userId) },
-                { Assertions.assertNotNull(msg.key.roomId) },
-                { Assertions.assertNotNull(msg.text) },
-                { Assertions.assertEquals(msg.text, "Welcome") },
-                { Assertions.assertTrue(msg.visible) }
+                { assertNotNull(msg) },
+                { assertNotNull(msg.key.id) },
+                { assertNotNull(msg.key.userId) },
+                { assertNotNull(msg.key.roomId) },
+                { assertNotNull(msg.text) },
+                { assertEquals(msg.text, "Welcome") },
+                { assertTrue(msg.visible) }
         )
     }
 }
