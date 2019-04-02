@@ -22,11 +22,13 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 import reactor.test.publisher.TestPublisher
+import reactor.test.scheduler.VirtualTimeScheduler
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 @ExtendWith(SpringExtension::class)
@@ -60,18 +62,20 @@ class ChatMessageRepositoryTests {
     }
 
     @Test // TODO WORKING WITH TIME
-    fun `verify key can propigate specific time state`() {
-        val logger: Logger = LoggerFactory.getLogger(this::class.java)
+    fun `verify key can propagate specific time state`() {
         val userId = UUID.randomUUID()
         val roomId = UUID.randomUUID()
 
         val testPublisher = TestPublisher.create<ChatMessage>()
 
         val testPublisherSupplier = Supplier {
-            testPublisher.flux().collectList()
+            testPublisher.flux()
         }
 
-        StepVerifier.create (testPublisherSupplier.get())
+        val current = Instant.now().toEpochMilli()
+
+        StepVerifier.withVirtualTime (testPublisherSupplier)
+                .then { VirtualTimeScheduler.get().advanceTimeTo(Instant.ofEpochMilli(current))}
                 .then {
                     testPublisher
                             .next(
@@ -79,12 +83,15 @@ class ChatMessageRepositoryTests {
                                             UUID.randomUUID(),
                                             userId,
                                             roomId,
-                                            Instant.now()
+                                            Instant.ofEpochMilli(VirtualTimeScheduler.get().now(TimeUnit.MILLISECONDS))
                                     ),
                                             "Hello",
                                             true)
                             )
-
+                }
+                .assertNext {
+                    assertNotNull(it)
+                    assertTrue( it.key.timestamp.toEpochMilli() >= current)
                 }
                 .thenAwait(Duration.ofSeconds(5))
                 .then {
@@ -94,7 +101,7 @@ class ChatMessageRepositoryTests {
                                             UUID.randomUUID(),
                                             userId,
                                             roomId,
-                                            Instant.now()
+                                            Instant.ofEpochMilli(VirtualTimeScheduler.get().now(TimeUnit.MILLISECONDS))
                                     ),
                                             "Hello",
                                             true)
@@ -102,11 +109,11 @@ class ChatMessageRepositoryTests {
 
                 }
                 .assertNext {
-                    assertEquals(2, it.size)
-                    assertTrue((it.get(1).key.timestamp.toEpochMilli() - it.get(0).key.timestamp.toEpochMilli())
-                     > 5000L )
+                    assertNotNull(it)
+                    assertTrue( it.key.timestamp.toEpochMilli() > current)
                 }
                 .verifyComplete()
+
     }
 
     @Test
