@@ -58,6 +58,18 @@ class DemoApplication {
 							.serverCommands()
 							.flushAll()
 
+					val processingFlux = fanoutProcessor
+							.onBackpressureDrop()
+							.handle<String> { m, sink ->
+								sink.next(m)
+							}
+							.flatMap { id ->
+								Flux.merge(
+										idCache.convertAndSend(topicKey, id),
+										listOps.leftPush(listKey, id)
+								)
+							}
+
 				})
 	}
 
