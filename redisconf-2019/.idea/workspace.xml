@@ -15,10 +15,10 @@
       <file leaf-file-name="RedisDemoTests.kt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/redisconf/demo/RedisDemoTests.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="341">
-              <caret line="59" column="4" selection-start-line="59" selection-start-column="4" selection-end-line="59" selection-end-column="4" />
+            <state relative-caret-position="1542">
+              <caret line="171" column="5" lean-forward="true" selection-start-line="171" selection-start-column="5" selection-end-line="171" selection-end-column="5" />
               <folding>
-                <element signature="e#28#601#0" expanded="true" />
+                <element signature="e#28#1088#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -243,7 +243,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.RedisDemoTests.testShouldPing">
+  <component name="RunManager" selected="JUnit.RedisDemoTests.testShouldPubSubSendReceive">
     <configuration default="true" type="Applet" factoryName="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
     </configuration>
@@ -263,6 +263,29 @@
       <option name="PACKAGE_NAME" value="com.redisconf.demo" />
       <option name="MAIN_CLASS_NAME" value="com.redisconf.demo.RedisDemoTests" />
       <option name="METHOD_NAME" value="testShouldPing" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <patterns />
+    </configuration>
+    <configuration name="RedisDemoTests.testShouldPubSubSendReceive" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="demo" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.redisconf.demo.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="com.redisconf.demo" />
+      <option name="MAIN_CLASS_NAME" value="com.redisconf.demo.RedisDemoTests" />
+      <option name="METHOD_NAME" value="testShouldPubSubSendReceive" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
@@ -318,9 +341,11 @@
     <list>
       <item itemvalue="Spring Boot.DemoApplication" />
       <item itemvalue="JUnit.RedisDemoTests.testShouldPing" />
+      <item itemvalue="JUnit.RedisDemoTests.testShouldPubSubSendReceive" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.RedisDemoTests.testShouldPubSubSendReceive" />
         <item itemvalue="JUnit.RedisDemoTests.testShouldPing" />
       </list>
     </recent_temporary>
@@ -350,12 +375,17 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1554324610094</updated>
-      <workItem from="1554324611537" duration="511000" />
+      <workItem from="1554324611537" duration="1015000" />
     </task>
     <servers />
   </component>
+  <component name="TestHistory">
+    <history-entry file="RedisDemoTests_testShouldPing - 2019.04.03 at 13h 59m 08s.xml">
+      <configuration name="RedisDemoTests.testShouldPing" configurationId="JUnit" />
+    </history-entry>
+  </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="511000" />
+    <option name="totallyTimeSpent" value="1015000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="6" />
@@ -427,10 +457,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/redisconf/demo/RedisDemoTests.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="59" column="4" selection-start-line="59" selection-start-column="4" selection-end-line="59" selection-end-column="4" />
+        <state relative-caret-position="1542">
+          <caret line="171" column="5" lean-forward="true" selection-start-line="171" selection-start-column="5" selection-end-line="171" selection-end-column="5" />
           <folding>
-            <element signature="e#28#601#0" expanded="true" />
+            <element signature="e#28#1088#0" expanded="true" />
           </folding>
         </state>
       </provider>
