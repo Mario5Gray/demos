@@ -35,7 +35,7 @@ class RingDemoApp {
         return ApplicationRunner { args -> ar.run(args) }
     }
 
-    //@Bean
+    @Bean
     fun cacheSmokeDemo(ringCache: ReactiveRedisTemplate<String, Ring>,
                        idCache: ReactiveRedisTemplate<String, String>): ApplicationRunner {
 
