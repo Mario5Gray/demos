@@ -103,6 +103,15 @@ class DemoApplication {
 									.repeat(1)
 							)
 
+					val storeFlux = Flux
+							.fromStream(messageList.stream())
+							.flatMap { geo ->
+								geoOps.add(geoKey, Point(geo.lat, geo.lon), geo.ring.id)
+										.flatMap {
+											ringOps.set(geo.ring.id, geo.ring)
+										}
+							}
+
 				})
 	}
 
