@@ -1,6 +1,8 @@
 package com.redisconf.demo
 
+import org.hamcrest.Matcher
 import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -48,6 +50,12 @@ class RedisDemoTests {
     @AfterAll
     fun tearDown() = redisServer.stop()
 
+    private val valueMatcher: Matcher<String> = Matchers
+            .allOf(
+                    Matchers.notNullValue(),
+                    Matchers.equalToIgnoringCase("1234")
+            )
+
     @Test
     fun testShouldPing() {
 
@@ -76,9 +84,11 @@ class RedisDemoTests {
                 .create(setAndGet)
                 .expectSubscription()
                 .assertNext { t ->
-                    MatcherAssert.assertThat("Receives Value for Key", t, idMatcher)
+                    MatcherAssert.assertThat("Receives Value for Key", t, valueMatcher)
                 }
                 .verifyComplete()
     }
+
+
 
 }
