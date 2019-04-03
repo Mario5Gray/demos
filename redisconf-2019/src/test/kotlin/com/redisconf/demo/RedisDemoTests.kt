@@ -140,7 +140,6 @@ class RedisDemoTests {
                 .delaySubscription(Duration.ofSeconds(1)) // ensure pubSubData is subscribed first
                 .subscribe()
 
-
         StepVerifier
                 .create(pubSubDataFlux
                         .take(2)
