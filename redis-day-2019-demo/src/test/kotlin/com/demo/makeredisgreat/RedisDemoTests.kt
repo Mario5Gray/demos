@@ -47,7 +47,7 @@ class RedisDemoTests {
 
         lettuce.afterPropertiesSet()
 
-        template = ReactiveStringRedisTemplate(lettuce)
+        template = RingRedisConfig().stringCache(lettuce)
     }
 
     @AfterAll
