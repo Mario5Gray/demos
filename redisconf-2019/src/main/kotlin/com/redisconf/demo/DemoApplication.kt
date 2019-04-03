@@ -70,6 +70,22 @@ class DemoApplication {
 								)
 							}
 
+					val readTopicFlux = idCache.listenTo(ChannelTopic(topicKey))
+							.flatMap { subscriber ->
+								ringOps
+										.get(subscriber.message)
+										.flatMap { ring ->
+											geoOps.position(geoKey, ring.id)
+													.map {
+														MessageGeo(ring, it.x, it.y)
+													}
+										}
+										.doOnNext { messageGeo ->
+											log.info("TOPIC( ${this.topicKey} ) == $messageGeo")
+											latch.countDown()
+										}
+							}
+
 				})
 	}
 
