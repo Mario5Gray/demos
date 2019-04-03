@@ -86,6 +86,23 @@ class DemoApplication {
 										}
 							}
 
+					val readListFlux = Flux
+							.from(listOps
+									.leftPop(listKey, Duration.ofSeconds(2))
+									.flatMapMany { ringId ->
+										Flux.zip(
+												ringOps.get(ringId),
+												geoOps.position(geoKey, ringId)
+										)
+												.map { MessageGeo(it.t1, it.t2.x, it.t2.y) }
+									}
+									.doOnNext {
+										log.info("LIST($listKey).pop == $it")
+										latch.countDown()
+									}
+									.repeat(1)
+							)
+
 				})
 	}
 
