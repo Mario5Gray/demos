@@ -112,6 +112,25 @@ class DemoApplication {
 										}
 							}
 
+					val searchFlux = Flux
+							.from(geoOps.radius(geoKey, Circle(RandomPlace, RandomDistance)))
+							.doOnNext {
+								fanoutProcessor.onNext(it.content.name)
+							}
+
+					Flux
+							.merge(processingFlux, readTopicFlux, readListFlux)
+							.doOnError(Throwable::printStackTrace)
+							.doOnComplete { log.info("READER Complete") }
+							.subscribe()
+
+					Flux
+							.concat(flushFlux, storeFlux, searchFlux)
+							.doOnError(Throwable::printStackTrace)
+							.doOnComplete { log.info("WRITERS COMPLETE") }
+							.subscribe()
+
+					latch.await(5, TimeUnit.SECONDS)
 				})
 	}
 
