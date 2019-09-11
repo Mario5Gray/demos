@@ -10,6 +10,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.reactivestreams.Publisher
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest
+import org.springframework.context.annotation.Import
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.ReactiveRedisTemplate
@@ -23,7 +24,7 @@ import redis.embedded.RedisServer
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 
-@DataRedisTest
+//@DataRedisTest
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RedisDemoTests {
@@ -47,7 +48,7 @@ class RedisDemoTests {
 
         lettuce.afterPropertiesSet()
 
-        template = RingRedisConfig().stringCache(lettuce)
+        template = ReactiveStringRedisTemplate(lettuce)
     }
 
     @AfterAll
@@ -102,7 +103,7 @@ class RedisDemoTests {
         // destination for pubsubSub data
         val pubSubDataFlux = processor
                 .onBackpressureBuffer()
-                .handle<String> { r, sink ->
+                .handle<String> { r, sink -> log.info("Message: ${r}")
                     sink.next(r)
                 }
                 .publish()
