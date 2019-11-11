@@ -3,16 +3,14 @@ package com.example.discovery
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.ApplicationRunner
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 import org.springframework.cloud.context.config.annotation.RefreshScope
 import org.springframework.context.annotation.Bean
-import org.springframework.stereotype.Component
+import java.util.*
 
 // login to consul
 // add a KV
@@ -23,20 +21,27 @@ import org.springframework.stereotype.Component
 @RefreshScope
 @ConstructorBinding
 @ConfigurationProperties("sample")
-data class SampleProp(val name: String) {
-	constructor() : this("nope")
+data class KVConfigurationProperty(val name: String, val id: UUID) {
+	constructor() : this("nope", UUID.randomUUID())
 }
 
-@EnableConfigurationProperties(SampleProp::class)
+
+@EnableConfigurationProperties(KVConfigurationProperty::class)
 @SpringBootApplication
+@RefreshScope
 class DiscoveryApplication {
 	private val log = LoggerFactory.getLogger(this::class.qualifiedName)
 
+	@Value("\${name}")
+	lateinit var name: String
+
 
 	@Bean
-	fun appRun(sampleProp: SampleProp): ApplicationRunner =
+	fun appRun(KVConfigurationProperty: KVConfigurationProperty
+			   ): ApplicationRunner =
 			ApplicationRunner {args ->
-				log.info("SampleProp: ${sampleProp.name}")
+				log.info("SampleProp: ${KVConfigurationProperty.name} / ${KVConfigurationProperty.id}")
+				log.info("name: ${name}")
 			}
 }
 
