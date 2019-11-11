@@ -13,9 +13,12 @@ import org.springframework.context.annotation.Bean
 import java.util.*
 
 // login to consul
-// add a KV
+// add a KV blob called data and fill it with the contents of your .yaml file
 //
-// /config/testApplication/sample/name : MARIO
+// /config/testApplication/data
+// /config/testApplication,dev/data      # for profiles use ','
+//
+// See bootstrap.yaml for application bootstrap configurations.
 //
 //https://stackoverflow.com/questions/49880453/what-difference-does-enableconfigurationproperties-make-if-a-bean-is-already-an/49888642
 @RefreshScope
