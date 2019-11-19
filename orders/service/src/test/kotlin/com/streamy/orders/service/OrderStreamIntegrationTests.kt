@@ -37,15 +37,25 @@ class OrderStreamIntegrationTests : IntegrationTestBase() {
                 .thenMany(
                         service.allOrders()
                 )
+                .groupBy {
+                    it.item
+                }
+                .flatMap {
+                    it.collectList()
+                }
+
 
         StepVerifier
                 .create(svcStream)
-                .assertNext {
-                    Assertions
-                            .assertThat(it)
-                            .isNotNull
-                            .hasNoNullFieldsOrProperties()
-                            .hasFieldOrPropertyWithValue("item", "BEANS")
+                .assertNext { orders ->
+                    orders.forEach { order ->
+                        println("EACH : $order")
+                        Assertions
+                                .assertThat(order)
+                                .isNotNull
+                                .hasNoNullFieldsOrProperties()
+                                .hasFieldOrPropertyWithValue("item", "BEANS")
+                    }
                 }
                 .verifyComplete()
     }
