@@ -13,7 +13,7 @@ import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHa
 import reactor.core.publisher.Hooks
 
 
-open class TestBase {
+open class RsocketTestBase {
     lateinit var requestor: RSocketRequester
 
     lateinit var server: CloseableChannel

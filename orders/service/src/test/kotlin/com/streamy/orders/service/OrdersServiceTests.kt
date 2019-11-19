@@ -8,8 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 import org.springframework.boot.autoconfigure.rsocket.RSocketStrategiesAutoConfiguration
-import org.springframework.boot.test.autoconfigure.json.JsonTest
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,7 +24,7 @@ import java.util.*
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import(OrdersServiceTests.ServiceRsocketTestConfiguration::class)
-class OrdersServiceTests : TestBase() {
+class OrdersServiceTests : RsocketTestBase() {
 
     @MockBean
     lateinit var orderService: OrderService
@@ -36,14 +34,14 @@ class OrdersServiceTests : TestBase() {
         BDDMockito
                 .given(orderService.allOrders())
                 .willReturn(Flux.just(
-                        Order(UUID.randomUUID(),"BEANS",20000)
+                        OrderEvent(UUID.randomUUID(),"BEANS",20000)
                 ))
 
         StepVerifier
                 .create(requestor
                         .route("all")
                         .data(Void::class.java)
-                        .retrieveFlux(Order::class.java))
+                        .retrieveFlux(OrderEvent::class.java))
                 .assertNext {
                     Assertions
                             .assertThat(it)
@@ -74,6 +72,6 @@ class OrdersServiceTests : TestBase() {
     @Controller
     class OrderController(val service: OrderService) {
         @MessageMapping("all")
-        fun allOrders(): Flux<Order> = service.allOrders()
+        fun allOrders(): Flux<OrderEvent> = service.allOrders()
     }
 }
