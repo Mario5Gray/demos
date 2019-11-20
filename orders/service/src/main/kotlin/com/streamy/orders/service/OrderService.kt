@@ -10,7 +10,7 @@ import java.util.*
 
 interface OrderService {
     fun allOrders(): Flux<OrderEvent>
-    fun saveOrder(order: OrderEvent): Mono<Void>
+    fun saveOrder(order: OrderEvent): Mono<OrderEvent>
 }
 
 open class OrderServiceXStream(val template: ReactiveRedisTemplate<String, OrderEvent>) : OrderService {
@@ -22,11 +22,10 @@ open class OrderServiceXStream(val template: ReactiveRedisTemplate<String, Order
                         UUID(it.id.timestamp!!, it.id.sequence!!),
                         it.value.item,
                         it.value.count)
-
             }
             .checkpoint("all")
 
-    override fun saveOrder(order: OrderEvent): Mono<Void> = template
+    override fun saveOrder(order: OrderEvent): Mono<OrderEvent> = template
             .opsForStream<String, OrderEvent>()
             .add(StreamRecords.newRecord()
                     .`in`("orders")
@@ -36,13 +35,4 @@ open class OrderServiceXStream(val template: ReactiveRedisTemplate<String, Order
                 OrderEvent(UUID(it.timestamp!!, it.sequence!!), order.item, order.count)
             }
             .checkpoint("save")
-            .then()
-
-    fun orderCount(item: String): Mono<Int> = allOrders()
-            .filter {
-                it.item == item
-            }
-            .reduce(0) { x, y ->
-                x + y.count
-            }
 }

@@ -19,7 +19,7 @@ class OrderController(template: ReactiveRedisTemplate<String, OrderEvent>) : Ord
     override fun allOrders(): Flux<OrderEvent> = super.allOrders()
 
     @MessageMapping("save")
-    override fun saveOrder(order: OrderEvent): Mono<Void> = super.saveOrder(order)
+    override fun saveOrder(order: OrderEvent): Mono<OrderEvent> = super.saveOrder(order)
 }
 
 @Configuration

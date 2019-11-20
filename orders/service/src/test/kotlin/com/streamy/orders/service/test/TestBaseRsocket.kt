@@ -6,11 +6,19 @@ import io.rsocket.transport.netty.server.CloseableChannel
 import io.rsocket.transport.netty.server.TcpServerTransport
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.Mockito
 import org.springframework.context.ApplicationContext
 import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.messaging.rsocket.RSocketStrategies
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler
 import reactor.core.publisher.Hooks
+
+fun <T> anyObject(): T {
+    Mockito.anyObject<T>()
+    return uninitialized()
+}
+
+fun <T> uninitialized(): T = null as T
 
 open class TestBaseRsocket {
     lateinit var requestor: RSocketRequester

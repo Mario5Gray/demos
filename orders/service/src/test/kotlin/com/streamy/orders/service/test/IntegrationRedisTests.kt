@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.connection.stream.StreamOffset
+import org.springframework.data.redis.connection.stream.StreamReadOptions
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
@@ -25,6 +27,7 @@ import reactor.core.publisher.Hooks
 import reactor.test.StepVerifier
 import redis.embedded.RedisServer
 import java.io.File
+import java.time.Duration
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -39,9 +42,11 @@ class IntegrationRedisTests {
 
     private lateinit var redisServer: RedisServer
 
+    @Autowired
+    private lateinit var template: ReactiveRedisTemplate<String, OrderEvent>
+
     @BeforeAll
     fun setupRedisEmbedded() {
-        println("PORT: $redisPort")
         redisServer = RedisServer(File("/usr/local/bin/redis-server"), redisPort.toInt())
         redisServer.start()
 
@@ -54,33 +59,44 @@ class IntegrationRedisTests {
     }
 
     @Test
+    fun `stream should receive and block`() {
+        StepVerifier
+                .create(
+                        template
+                                .opsForStream<String, OrderEvent>()
+                                .read(OrderEvent::class.java,
+                                        StreamReadOptions.empty().block(Duration.ofSeconds(5)),
+                                        StreamOffset.fromStart("orders"))
+                                .map {
+                                    it.value
+                                }.take(1)
+                ).assertNext {}
+                .verifyComplete()
+
+
+    }
+
+    @Test
     fun `should save an order and receive an order`() {
-        val order = OrderEvent(UUID.randomUUID(), "BEANS", 1)
+        val order = OrderEvent(null, "BEANS", 1)
 
         val svcStream = service
                 .saveOrder(order)
                 .thenMany(
                         service.allOrders()
                 )
-                .groupBy {
-                    it.item
+                .filter {
+                    "BEANS" == it.item
                 }
-                .flatMap {
-                    it.collectList()
-                }
-
 
         StepVerifier
                 .create(svcStream)
-                .assertNext { ordersList ->
-                    ordersList.forEach { order ->
-                        println("EACH : $order")
+                .assertNext {  order ->
                         Assertions
                                 .assertThat(order)
                                 .isNotNull
                                 .hasNoNullFieldsOrProperties()
                                 .hasFieldOrPropertyWithValue("item", "BEANS")
-                    }
                 }
                 .verifyComplete()
     }

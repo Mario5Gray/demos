@@ -14,8 +14,6 @@ class OrdersClient(private val requester: RSocketRequester) {
                     .route("all")
                     .retrieveFlux(OrderEvent::class.java)
 
-
-
     fun saveOrder(order: OrderEvent): Mono<Void> =
             requester
                     .route("save")
