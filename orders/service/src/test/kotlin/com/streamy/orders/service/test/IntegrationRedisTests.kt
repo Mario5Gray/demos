@@ -4,10 +4,13 @@ import com.streamy.orders.service.OrderEvent
 import com.streamy.orders.service.OrderService
 import com.streamy.orders.service.OrderServiceXStream
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -18,15 +21,37 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import reactor.core.publisher.Hooks
 import reactor.test.StepVerifier
+import redis.embedded.RedisServer
+import java.io.File
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import(OrderStreamIntegrationTests.StreamIntegrationConfiguration::class)
-class OrderStreamIntegrationTests : IntegrationTestBase() {
+@Import(IntegrationRedisTests.StreamIntegrationConfiguration::class)
+class IntegrationRedisTests {
     @Autowired
     private lateinit var service: OrderService
+
+    @Value("\${redis.embedded.port:7474}")
+    private lateinit var redisPort: String
+
+    private lateinit var redisServer: RedisServer
+
+    @BeforeAll
+    fun setupRedisEmbedded() {
+        println("PORT: $redisPort")
+        redisServer = RedisServer(File("/usr/local/bin/redis-server"), redisPort.toInt())
+        redisServer.start()
+
+        Hooks.onOperatorDebug()
+    }
+
+    @AfterAll
+    fun shutdownEmbedded() {
+        redisServer.stop()
+    }
 
     @Test
     fun `should save an order and receive an order`() {
@@ -62,8 +87,11 @@ class OrderStreamIntegrationTests : IntegrationTestBase() {
 
     @Configuration
     class StreamIntegrationConfiguration {
+        @Value("\${redis.embedded.port:7474}")
+        private lateinit var redisPort: String
+
         @Bean
-        fun lettuce() = LettuceConnectionFactory(RedisStandaloneConfiguration("localhost", 6379))
+        fun lettuce() = LettuceConnectionFactory(RedisStandaloneConfiguration("localhost", redisPort.toInt()))
 
         @Bean
         fun template(lettuce: LettuceConnectionFactory): ReactiveRedisTemplate<String, OrderEvent> {

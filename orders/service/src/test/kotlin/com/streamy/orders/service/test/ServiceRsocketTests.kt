@@ -25,8 +25,8 @@ import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import(OrdersServiceTests.ServiceRsocketTestConfiguration::class)
-class OrdersServiceTests : RsocketTestBase() {
+@Import(ServiceRsocketTests.ServiceRsocketTestConfiguration::class)
+class ServiceRsocketTests : TestBaseRsocket() {
 
     @MockBean
     lateinit var orderService: OrderService
