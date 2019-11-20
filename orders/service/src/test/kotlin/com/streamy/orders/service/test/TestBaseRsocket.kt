@@ -12,15 +12,14 @@ import org.springframework.messaging.rsocket.RSocketStrategies
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler
 import reactor.core.publisher.Hooks
 
-
 open class TestBaseRsocket {
     lateinit var requestor: RSocketRequester
-
     lateinit var server: CloseableChannel
 
     @BeforeEach
     fun setUp(context: ApplicationContext) {
         val messageHandler = context.getBean(RSocketMessageHandler::class.java)
+        val strategies = context.getBean(RSocketStrategies::class.java)
 
         server = RSocketFactory.receive()
                 .frameDecoder(PayloadDecoder.ZERO_COPY)
@@ -28,8 +27,6 @@ open class TestBaseRsocket {
                 .transport(TcpServerTransport.create("localhost", 0))
                 .start()
                 .block()!!
-
-        val strategies = context.getBean(RSocketStrategies::class.java)
 
         requestor = RSocketRequester
                 .builder()

@@ -1,6 +1,5 @@
 package com.streamy.orders.service.test
 
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.streamy.orders.service.OrderEvent
 import com.streamy.orders.service.OrderService
 import org.assertj.core.api.Assertions
@@ -64,11 +63,7 @@ class ServiceRsocketTests : TestBaseRsocket() {
         }
 
         @Bean
-        fun ktModule() = KotlinModule()
-
-        @Bean
         fun controller(svc: OrderService) = OrderController(svc)
-
     }
 
     @Controller
