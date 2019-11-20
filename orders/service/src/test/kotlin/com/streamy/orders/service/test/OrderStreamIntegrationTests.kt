@@ -1,13 +1,13 @@
-package com.streamy.orders.service
+package com.streamy.orders.service.test
 
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.streamy.orders.service.OrderEvent
+import com.streamy.orders.service.OrderService
+import com.streamy.orders.service.OrderServiceXStream
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
-import org.springframework.boot.autoconfigure.rsocket.RSocketStrategiesAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -47,8 +47,8 @@ class OrderStreamIntegrationTests : IntegrationTestBase() {
 
         StepVerifier
                 .create(svcStream)
-                .assertNext { orders ->
-                    orders.forEach { order ->
+                .assertNext { ordersList ->
+                    ordersList.forEach { order ->
                         println("EACH : $order")
                         Assertions
                                 .assertThat(order)
@@ -61,11 +61,7 @@ class OrderStreamIntegrationTests : IntegrationTestBase() {
     }
 
     @Configuration
-    @Import(JacksonAutoConfiguration::class, RSocketStrategiesAutoConfiguration::class)
     class StreamIntegrationConfiguration {
-        @Bean
-        fun ktModule() = KotlinModule()
-
         @Bean
         fun lettuce() = LettuceConnectionFactory(RedisStandaloneConfiguration("localhost", 6379))
 

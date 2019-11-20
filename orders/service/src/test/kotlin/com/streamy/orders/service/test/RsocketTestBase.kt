@@ -1,4 +1,4 @@
-package com.streamy.orders.service
+package com.streamy.orders.service.test
 
 import io.rsocket.RSocketFactory
 import io.rsocket.frame.decoder.PayloadDecoder

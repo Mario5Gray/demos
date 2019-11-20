@@ -13,12 +13,16 @@ interface OrderService {
     fun saveOrder(order: OrderEvent): Mono<Void>
 }
 
-class OrderServiceXStream(val template: ReactiveRedisTemplate<String, OrderEvent>) : OrderService {
+open class OrderServiceXStream(val template: ReactiveRedisTemplate<String, OrderEvent>) : OrderService {
     override fun allOrders(): Flux<OrderEvent> = template
             .opsForStream<String, OrderEvent>()
             .read(OrderEvent::class.java, StreamOffset.fromStart("orders"))
             .map {
-                it.value
+                OrderEvent(
+                        UUID(it.id.timestamp!!, it.id.sequence!!),
+                        it.value.item,
+                        it.value.count)
+
             }
             .checkpoint("all")
 
@@ -34,5 +38,11 @@ class OrderServiceXStream(val template: ReactiveRedisTemplate<String, OrderEvent
             .checkpoint("save")
             .then()
 
-
+    fun orderCount(item: String): Mono<Int> = allOrders()
+            .filter {
+                it.item == item
+            }
+            .reduce(0) { x, y ->
+                x + y.count
+            }
 }

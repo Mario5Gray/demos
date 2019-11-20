@@ -1,4 +1,4 @@
-package com.streamy.orders.service
+package com.streamy.orders.service.test
 
 import org.junit.jupiter.api.BeforeAll
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration

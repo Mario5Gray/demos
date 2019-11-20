@@ -1,6 +1,8 @@
-package com.streamy.orders.service
+package com.streamy.orders.service.test
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.streamy.orders.service.OrderEvent
+import com.streamy.orders.service.OrderService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -34,7 +36,7 @@ class OrdersServiceTests : RsocketTestBase() {
         BDDMockito
                 .given(orderService.allOrders())
                 .willReturn(Flux.just(
-                        OrderEvent(UUID.randomUUID(),"BEANS",20000)
+                        OrderEvent(UUID.randomUUID(), "BEANS", 20000)
                 ))
 
         StepVerifier
