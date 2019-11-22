@@ -14,11 +14,11 @@ class OrdersClient(private val requester: RSocketRequester) {
                     .route("all")
                     .retrieveFlux(OrderEvent::class.java)
 
-    fun saveOrder(order: OrderEvent): Mono<Void> =
+    fun saveOrder(order: OrderEvent): Mono<OrderEvent> =
             requester
                     .route("save")
                     .data(Mono.just(order), OrderEvent::class.java)
-                    .retrieveMono(Void::class.java)
+                    .retrieveMono(OrderEvent::class.java)
                     .timeout(Duration.ofMillis(10000))
 
 }

@@ -1,5 +1,7 @@
 package com.streamy.orders.service
 
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
+import org.springframework.beans.propertyeditors.UUIDEditor
 import org.springframework.data.redis.connection.stream.RecordId
 import org.springframework.data.redis.connection.stream.StreamOffset
 import org.springframework.data.redis.connection.stream.StreamRecords
