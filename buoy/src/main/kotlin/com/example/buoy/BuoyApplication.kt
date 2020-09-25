@@ -23,11 +23,17 @@ import java.util.concurrent.Executors
 class BuoyApplication {
     private val latch = CountDownLatch(2)
 
-    @Value("\${demo.app.message:Hello}")
-    private lateinit var message: String
-
     @Autowired
     private lateinit var eventPublisher: ApplicationEventPublisher
+
+    @Bean
+    fun latchDepletion() = CommandLineRunner {
+        Executors.newSingleThreadExecutor()
+                .execute {
+                    latch.await()
+                    AvailabilityChangeEvent.publish(this.eventPublisher, Exception("Countdown latch depletion"), LivenessState.BROKEN)
+                }
+    }
 
     @Bean
     fun route() = router {
@@ -40,26 +46,11 @@ class BuoyApplication {
     }
 
     @Bean
-    fun infoContributor() = InfoContributor { builder ->
-        builder.withDetail("example", mapOf(Pair("key", "value")))
-    }
-
-    @Bean
     fun myHealthIndicator() = ReactiveHealthIndicator {
         when (latch.count) {
             1L -> Mono.just(Health.down().build())
             else -> Mono.just(Health.up().build())
         }
-
-    }
-
-    @Bean
-    fun latchDepletion() = CommandLineRunner {
-        Executors.newSingleThreadExecutor()
-                .execute {
-                    latch.await()
-                    AvailabilityChangeEvent.publish(this.eventPublisher, Exception("Countdown latch depletion"), LivenessState.BROKEN)
-                }
     }
 
     companion object {
