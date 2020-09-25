@@ -1,16 +1,16 @@
-# Deploying for lifecycle cheks
+# Let's foray into Production ready Kubernetes deployments with Spring Boot
 
 The function for this demo is to illustrate configuring a Spring Boot
 application for production-readiness with Kubernetes deployments. It will:
 
 * Build a container with spring-boot/maven
-* Deployment for kubernetes
 * Expose liveness, readiness custom endpoints
-* Application that exercises these features
+* Deployment for kubernetes that utilizes these endpoints
+* Application that exercises lifecycle state-changing
 
 ## Building the container
 
-while not the main feature of this post, it should be known that building containers 
+While not the main feature of this post, it should be known that building containers 
 from build-tool alone (sans custom DOCKERFILE) is achievable without much
 intervention. This will be described in a later blog post in detail, however
 a good place to start with in discovering this feature are:
@@ -22,7 +22,7 @@ a good place to start with in discovering this feature are:
 
 ### Setup Docker for local registry
 
-I am using Docker as my container agent, so specifically I wanted to deploy localy 
+I am using Docker as my container agent, so specifically I wanted to deploy locally 
 without the need for dockerhub. Doing this is actually quite simple and requires just a 
 few commands. I recommend the following Docker documentation:
 
@@ -140,7 +140,7 @@ single (ExecutorService bound) thread that will block until latch is 0, then pub
 
 ### Custom Health info
 
-This `my` Health indicator will submit 'broken' state when the countdown latch is 0.
+This `my` Health indicator will submit 'broken' state when the countdown latch is 1.
 Create a bean of type`HealthIndicator` or it's Reactive variant `ReactiveHealthIndicator`.
 The Health value provided by this Indicator will be used as the `my` aggregate in health-groups.
 
@@ -210,7 +210,7 @@ Content-Type: application/vnd.spring-boot.actuator.v3+json
 }
 ```
 
-Now that we know the 3 groups are available and have aggregated 'UP' status, lets do the first round of endpoint checking:
+We know the 3 groups are available and have aggregated 'UP' status, lets do the first round of endpoint checking:
 
 ```shell script
 $ http :8080/actuator/health/custom
