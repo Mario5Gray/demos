@@ -1,10 +1,10 @@
-# Let's foray into Production ready Kubernetes deployments with Spring Boot
+# Let's Foray Into Production Ready Kubernetes Deployments With Spring Boot
 
 The function for this demo is to illustrate configuring a Spring Boot
 application for production-readiness with Kubernetes deployments. It will:
 
 * Build a container with spring-boot/maven
-* Expose liveness, readiness custom endpoints
+* Expose liveness, readiness and custom heath data
 * Deployment for kubernetes that utilizes these endpoints
 * Application that exercises lifecycle state-changing
 
@@ -23,18 +23,18 @@ a good place to start with in discovering this feature are:
 ### Setup Docker for local registry
 
 I am using Docker as my container agent, so specifically I wanted to deploy locally 
-without the need for dockerhub. Doing this is actually quite simple and requires just a 
-few commands. I recommend the following Docker documentation:
+without the need for dockerhub. This requires a little configuration, and as such I recommend 
+the following Docker documentation:
 
 * [Docker Docs](https://docs.docker.com/registry/)
 
-MY Docker registry was on port 5000, and configured using this command:
+This demo assumes a docker registry on port 5000, and is configured using this command:
 
 ```shell script
 docker run -d -p 5000:5000 --name registry registry:2
 ```
 
-Therefore, the 'deployment.yaml' would call for my image as follows:
+Therefore, the 'deployment.yaml' would call for the image as follows:
 
 ```yaml
     spec:
@@ -42,8 +42,7 @@ Therefore, the 'deployment.yaml' would call for my image as follows:
       - image: localhost:5000/buoy:latest
         name: buoy
         resources: {}
-```        
-Whereas 'buoy:latest` are the docker tags I used to look-up the image.
+```
 
 ## liveness/readiness probe configuration
 
@@ -73,13 +72,13 @@ for Kubernetes to know what state our lifecycle is in.
 
 In the future, I'll set the HttpGet path's to whatever the app has configured.
 
-## Exposing Application Liveness and readiness endpoints
+## Exposing Application liveness and readiness Endpoints
 
-This application makes use of Actuator's Health endpoints for giving lifecycle availability
-state through an HTTP endpoint. Specific configuration for `application.properties` looks like:
+This application makes use of Actuator's Health endpoints (Web Root of `/actuator`) for giving lifecycle availability
+state through an HTTP endpoint. Specifically - configuration for `application.properties` looks like:
 
 ```properties
-management.endpoints.web.exposure.include=health,shutdown,info
+management.endpoints.web.exposure.include=health,shutdown
 
 management.endpoint.health.probes.enabled=true
 
@@ -88,16 +87,20 @@ management.endpoint.health.group.liveness.include=livenessState
 management.endpoint.health.group.readiness.include=readinessState
 ```   
 
-The first thing I am going to configure here are 3 health groups for the `/health` endpoint.
-These will be accessible by  `http://****/health/{liveness,readiness,custom}`.
+The two endpoints: 
+
+* health - Application Lifecycle Availability 
+* shutdown - Gracefully Shutdown the Instance
+
+### For `/health` endpoints: Indicators
+
+Here there are 3 health groups for the `/health` endpoint. These will be accessible by  `http://****/health/{liveness,readiness,custom}`.
  
-To do this, I must supply these endpoints with probe data. Probe data is aggregate and is configured using
-a comma-delimited set of probe names. Hence,in `custom` health-group the `my` and `diskSpace` probes specify 
-that their aggregated value will become the state of the group.
+The `/health` endpoint itself returns groups that are supplying indicator data. It also supplies aggregate status. 
 
 The next 2 groups `liveness` and `readiness` use their designated Probes as state.
 
-**Important**: if any (custom or otherwise) endpoints exposed then there MUST be some probes
+**Important**: if any (custom or otherwise) endpoints exposed then there MUST be some indicators
 to feed them. In other words requesting status from a probe-less endpoint will result in 404 since nothing
 is there to fill it.
 
@@ -191,6 +194,8 @@ Execute:
 ```shell script
 kubectl apply -f deployment.yaml
 ```
+
+## Examine the Running Application
 
 Once the container is running, we can do something like see what health groups are exposed:
 

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: buoy-north
+  name: buoy-north
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: buoy-north
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: buoy-north
+    spec:
+      containers:
+      - image: localhost:5000/buoy-north:latest
+        name: buoy-buoy-north
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: buoy-north
+  name: buoy-north
+spec:
+  ports:
+  - name: 9000-9000
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app: buoy-north
+  type: LoadBalancer
+status:
+  loadBalancer: {}
