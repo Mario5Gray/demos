@@ -104,7 +104,6 @@ docker tag buoy:0.0.1-SNAPSHOT localhost:5000/buoy-north:latest
 docker push localhost:5000/buoy-north:latest
 ```
 
-
 ### ConfigMap to boot
 
 Let's configure a ConfigMap to hold a couple of properties that the app can read at runtime. 
@@ -122,6 +121,14 @@ data:
 ```
 
 Then apply this configmap: `k apply -f buoy-north-configmap.yaml`.
+
+### Just in case 
+
+In case your serviceaccount doesn't have access to configmaps:
+
+```shell script
+
+```
 
 ## Deploy to Kubernetes
 
