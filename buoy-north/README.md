@@ -42,7 +42,7 @@ Therefore, the 'deployment.yaml' would call for the image as follows:
         resources: {}
 ```
 
-## Reading and reacting to Configmaps
+## Support for ConfigMaps in app
 
 A well written [document](https://cloud.spring.io/spring-cloud-static/spring-cloud-kubernetes/1.0.0.M2/multi/multi__configmap_propertysource.html) exists on this subject as well as [project notes](https://github.com/fabric8io/spring-cloud-kubernetes). Please check it out for more details.
 
@@ -121,9 +121,9 @@ docker tag buoy:0.0.1-SNAPSHOT localhost:5000/buoy-north:latest
 docker push localhost:5000/buoy-north:latest
 ```
 
-### ConfigMap to boot
+### Create the ConfigMap
 
-Let's configure a ConfigMap to hold a couple of properties that the app can read at runtime. 
+Let's create a ConfigMap to hold a couple of properties that the app can read at runtime. 
 
 buoy-north-configmap.yaml:
 ```yaml
@@ -139,6 +139,34 @@ data:
 
 Then apply this configmap: `k apply -f buoy-north-configmap.yaml`.
 
+### Permission to read ConfigMap
+
+Depending on your setup, you may need to open permissions for viewing ConfigMaps.
+As I am using `minikube` for this demo, the default user doesnt have access, so I must
+enable it.
+
+Create a RoleBinding that gives the default system user access to ConfigMaps in the default namespace
+For additional information about Kubernetes RBAC, see [the documentation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/).
+
+config-view-role.yaml
+```
+apiVersion: rbac.authorization.k8s.io/v1
+#k create rolebinding config-view --clusterrole view
+#  --user system:serviceaccount:default:default --namespace default
+kind: RoleBinding
+metadata:
+  name: config-view
+  namespace: default
+subjects:
+  - kind: User
+    name: system:serviceaccount:default:default
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: view # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+```
 ## Deploy to Kubernetes
 
 Finally, we can deploy the application to our cluster.
