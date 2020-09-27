@@ -44,7 +44,24 @@ Therefore, the 'deployment.yaml' would call for the image as follows:
 
 ## Reading and reacting to Configmaps
 
-We determine the behaviour of configmap consumption by configuring a `ConfigReloadProperties` bean.
+A well written [document](https://cloud.spring.io/spring-cloud-static/spring-cloud-kubernetes/1.0.0.M2/multi/multi__configmap_propertysource.html) exists on this subject as well as [project notes](https://github.com/fabric8io/spring-cloud-kubernetes). Please check it out for more details.
+
+Head to [start.spring.io](https://start.spring.io) and setup a new application with `actuator` and `webflux`.
+Additionally, add the spring-cloud dependencies for ConfigMap support to the project. 
+
+```xml
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-kubernetes-config</artifactId>
+            <version>0.3.0.RELEASE</version>
+        </dependency>
+```
+
+To configure ConfigMaps property consumption in the app, setup a `ConfigReloadProperties` bean.
 This bean is be configured by setting properties with prefix `spring.cloud.kubernetes.reload` as is 
 done in the next snippet.
 
@@ -63,7 +80,7 @@ spring.cloud.kubernetes.reload.period=2000
 
 In this example, configmap reloading will happen on a polling interval of 2 seconds, 
 and will only refresh affected properties as configured with the `spring.cloud.kubernetes.reload.strategy`
-property. This property can also be configured to restart the applicationcontext or to even shutdown the application.
+property. This property can also be configured to restart the ApplicationContext or to even shutdown the application.
 
 I suppose events might not be available due to system policy or system design so 'polling' is used here.
 Don't forget to set `spring.cloud.kubernetes.reload.mode` to 'event' if that is supported in your environment.   
@@ -192,8 +209,8 @@ Content-Type: text/plain;charset=UTF-8
 hello from configmap - 3
 ```
 
-* Update the configmap and watch application reload
-* 
-
 ## The End
 
+For now, this is as much as it should take for sufficient Kubernetes ConfigMap support.
+
+Happy hacking!
