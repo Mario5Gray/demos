@@ -5,3 +5,4 @@ metadata:
 data:
   application.properties: |-
     message=hello from configmap
+    countof=3
