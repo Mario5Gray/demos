@@ -1,12 +1,10 @@
-# Let's Foray Into Production Ready Kubernetes Deployments With Spring Boot
+# Consuming Kubernetes ConfigMaps with Spring Boot
 
 The function for this demo is to illustrate configuring a Spring Boot
 application for production-readiness with Kubernetes deployments. It will:
 
 * Build a container with spring-boot/maven
 * Application that consumes ConfigMaps for property sources
-* Deployment for kubernetes that utilizes these endpoints
-* Application that exercises configuration map and changes
 
 ## Building the container
 
@@ -184,7 +182,7 @@ kubectl apply -f deployment.yaml
 
 ## Examine the Running Application
 
-Once the container is running, we can do something like see what health groups are exposed:
+Once the container is running, we request from the `message` endpoint to see the configmap-bound properties.
 
 ```shell script
 $ http :8080/message
@@ -194,6 +192,9 @@ Content-Type: text/plain;charset=UTF-8
 
 hello from configmap - 3
 ```
+
+* Update the configmap and watch application reload
+* 
 
 ## The End
 
