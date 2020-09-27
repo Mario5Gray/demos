@@ -122,14 +122,6 @@ data:
 
 Then apply this configmap: `k apply -f buoy-north-configmap.yaml`.
 
-### Just in case 
-
-In case your serviceaccount doesn't have access to configmaps:
-
-```shell script
-
-```
-
 ## Deploy to Kubernetes
 
 Finally, we can deploy the application to our cluster.

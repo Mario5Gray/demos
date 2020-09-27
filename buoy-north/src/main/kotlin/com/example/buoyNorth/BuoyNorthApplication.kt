@@ -12,8 +12,8 @@ import reactor.core.publisher.Mono
 class BuoyNorthApplication {
 
     @Bean
-    fun routers(@Value("\${message:default message}") message: String,
-                @Value("\${countof:0}") countof: Integer) = router {
+    fun routers(@Value("\${message}") message: String,
+                @Value("\${countof}") countof: Integer) = router {
         GET("/message") {
             ServerResponse
                     .ok()
