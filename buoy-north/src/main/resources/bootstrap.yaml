@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: buoy-north
+  cloud:
+    kubernetes:
+      config:
+        name: buoy-north
+        namespace: default
+        sources:
+          - name: buoy-north
+      reload:
+        enabled: true
+        mode: polling
+        strategy: refresh
+        period: 2000
+      secrets:
+        name: buoy-secret
+        enabled: true
+        enable-api: false

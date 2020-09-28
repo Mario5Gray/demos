@@ -10,31 +10,43 @@ spec:
   selector:
     matchLabels:
       app: buoy-north
-  strategy: {}
+  strategy: { }
   template:
     metadata:
       creationTimestamp: null
       labels:
         app: buoy-north
     spec:
+      serviceAccountName: default
       containers:
-      - image: localhost:5000/buoy-north:latest
-        name: buoy-buoy-north
-        resources: {}
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          initialDelaySeconds: 10
-          failureThreshold: 5
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          failureThreshold: 1
-          periodSeconds: 5
-status: {}
+        - image: localhost:5000/buoy-north:latest
+          name: buoy-north
+          env:
+            - name: secret.message
+              valueFrom:
+                secretKeyRef:
+                  name: buoy-secret
+                  key: secret.message
+            - name: secret.count
+              valueFrom:
+                secretKeyRef:
+                  name: buoy-secret
+                  key: secret.count
+          resources: { }
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 10
+            failureThreshold: 5
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 1
+            periodSeconds: 5
+status: { }
 ---
 apiVersion: v1
 kind: Service
@@ -45,12 +57,12 @@ metadata:
   name: buoy-north
 spec:
   ports:
-  - name: 8080-8080
-    port: 8080
-    protocol: TCP
-    targetPort: 8080
+    - name: 8080-8080
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: buoy-north
   type: LoadBalancer
 status:
-  loadBalancer: {}
+  loadBalancer: { }

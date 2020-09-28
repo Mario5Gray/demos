@@ -167,6 +167,13 @@ roleRef:
   name: view # this must match the name of the Role or ClusterRole you wish to bind to
   apiGroup: rbac.authorization.k8s.io
 ```
+
+To enable, execute:
+
+```shell script
+kubectl apply -f config-view-role.yaml
+```
+
 ## Deploy to Kubernetes
 
 Finally, we can deploy the application to our cluster.
@@ -218,7 +225,7 @@ status:
   loadBalancer: {}
 ```
 
-Execute:
+Finally, execute:
 
 ```shell script
 kubectl apply -f deployment.yaml

@@ -12,12 +12,13 @@ import reactor.core.publisher.Mono
 class BuoyNorthApplication {
 
     @Bean
-    fun routers(@Value("\${message}") message: String,
+    fun routers(@Value("\${secret.message}") secret: String,
+                @Value("\${message}") message: String,
                 @Value("\${countof}") countof: Integer) = router {
         GET("/message") {
             ServerResponse
                     .ok()
-                    .body(Mono.just("${message} - ${countof}"), String::class.java)
+                    .body(Mono.just("${message} - ${countof} [${secret}]"), String::class.java)
         }
     }
 
