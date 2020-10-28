@@ -18,7 +18,7 @@ spec:
         app: demo
     spec:
       containers:
-      - image: localhost:5000/buoy:latest
+      - image: mariogray/buoy:latest
         name: buoy
         resources: {}
         livenessProbe:
